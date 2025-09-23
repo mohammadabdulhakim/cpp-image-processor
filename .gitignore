@@ -1,0 +1,49 @@
+# ---- General build outputs ----
+cmake-build-*/
+build/
+out/
+dist/
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+*.pdb
+*.ilk
+*.idb
+
+# ---- JetBrains CLion ----
+.idea/
+*.iml
+
+# ---- Visual Studio ----
+.vs/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.suo
+*.ncb
+*.sdf
+*.opensdf
+*.cachefile
+
+# ---- VSCode ----
+.vscode/
+*.code-workspace
+
+# ---- Logs & temp ----
+*.log
+*.tmp
+*.temp
+*.swp
+
+# ---- OS-specific ----
+# macOS
+.DS_Store
+# Windows
+Thumbs.db
+ehthumbs.db
+desktop.ini
