@@ -125,6 +125,16 @@ public:
 };
 
 
+Image loadImage () {
+  std::cout << "Enter the image's name: "; std::string imgName; std::cin >> imgName;
+
+  std::string imgPath = "assets/" + imgName;
+  Image img(imgPath);
+  return img;
+
+}
+
+
 int main() {
 
   Image img("assets/img.jpg");
@@ -134,12 +144,51 @@ int main() {
 
   GreyFilter grey(img);
   grey.apply("img.grey.jpg");
+
   BwFilter bw(img);
   bw.apply("img.bw.jpg");
+
   InvertFilter invert(img);
   invert.apply("img.invert.jpg");
+  
   MergeFilter merge(toy1, toy2);  
   merge.apply("toy1,toy2.jpg");
+
+    std::string welcomeMsg = "\nWelcome to the ultimate image processor CPP app.";
+    std::cout << welcomeMsg << "\n";
+    std::cout << std::string(welcomeMsg.length()/5, ' ') << std::string(welcomeMsg.length()*3/5, '=') << std::string(welcomeMsg.length()/5, ' ') << "\n \n";
+
+    bool exited = false;
+    bool fileLoaded = false; // default false
+    while (!exited) {
+
+
+    std::cout << "Select by typing the number of the operation:\n";
+
+    std::cout << "1. Load an image to work on.\n";
+    if (fileLoaded) {
+      std::cout << "Filters\n";
+      std::cout << "\t2. Black and White Filter.\n";
+      std::cout << "\t3. Grey Scale Filter.\n";
+      std::cout << "\t4. Invert Filter.\n";
+    }
+    std::cout << "0. Exit.\n";
+    std::cout << "-------------------------------\n";
+
+
+    int res;
+    std::cout << "Enter Your Response:\t";
+    std::cin >> res;
+    std::cout << '\n';
+
+
+    if (res == 1) {
+        Image img = loadImage();
+        fileLoaded = true;
+    } else {
+        exited = true;
+    }
+  }
 
 
   return 0;
