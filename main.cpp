@@ -4,6 +4,63 @@
 #include <string>
 using namespace std;
 
+string currentDir = "C:\\Users\\Mohammad\\CLionProjects\\cpp-img-processor\\imgs\\";
+
+Image loadImage () {
+  cout << "Enter the image's name: "; string imgName; cin >> imgName;
+
+  string imgPath = currentDir + imgName;
+  // try { //TODO: Handle Errors with the User Without Breaking the Program
+    Image img(imgPath);
+    return img;
+  // }catch (invalid_argument error) {
+  //   cout << "Invalid filename, There are no images with this name.\n";
+  // }
+
+}
+
+int main() {
+    string welcomeMsg = "\nWelcome to the ultimate image processor CPP app.";
+    cout << welcomeMsg << "\n";
+    cout << string(welcomeMsg.length()/5, ' ') << string(welcomeMsg.length()*3/5, '=') << string(welcomeMsg.length()/5, ' ') << "\n \n";
+
+    bool exited = false;
+    bool fileLoaded = false; // default false
+    while (!exited) {
+
+
+    cout << "Select by typing the number of the operation:\n";
+
+    cout << "1. Load an image to work on.\n";
+    if (fileLoaded) {
+      cout << "Filters\n";
+      cout << "\t2. Black and White Filter.\n";
+      cout << "\t3. Grey Scale Filter.\n";
+      cout << "\t4. Invert Filter.\n";
+    }
+    cout << "0. Exit.\n";
+    cout << "-------------------------------\n";
+
+
+    int res;
+    cout << "Enter Your Response:\t";
+    cin >> res;
+    cout << '\n';
+
+
+    if (res == 1) {
+        Image img = loadImage();
+        fileLoaded = true;
+    } else {
+        exited = true;
+    }
+  }
+
+
+  return 0;
+}
+
+/*
 class Filter {
 private:
   Image img;
@@ -88,23 +145,4 @@ public:
     return true;
   }
 };
-
-
-class Menu {
-
-};
-
-int main() {
-
-  string currentDir = "C:\\Users\\Mohammad\\CLionProjects\\cpp-img-processor\\";
-  Image img((currentDir+"imgs\\img.jpg"));
-
-
-  string welcomeMsg = "Welcome to the ultimate image processor CPP app.";
-  cout << welcomeMsg << "\n";
-  cout << string(welcomeMsg.length()/5, ' ') << string(welcomeMsg.length()*3/5, '=') << string(welcomeMsg.length()/5, ' ');
-
-
-
-  return 0;
-}
+*/
