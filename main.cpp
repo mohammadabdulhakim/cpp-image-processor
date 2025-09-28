@@ -1,6 +1,7 @@
 #include "Image_Class.h"
 #include <stdexcept>
-#include "iostream"
+#include <iostream>
+#include <string>
 using namespace std;
 
 class Filter {
@@ -89,20 +90,21 @@ public:
 };
 
 
+class Menu {
+
+};
+
 int main() {
 
   string currentDir = "C:\\Users\\Mohammad\\CLionProjects\\cpp-img-processor\\";
   Image img((currentDir+"imgs\\img.jpg"));
 
-  Filter filter(img);
 
-  cout << "\nInvert";
-  filter.invertFilter((currentDir+"imgs\\invert_image.jpg"))? (cout << " - (passed)"):(cout << " - (failed)");
-  cout << "\ngrey";
-  filter.greyFilter((currentDir+"imgs\\grey_image.jpg"))? (cout << " - (passed)"):(cout << " - (failed)");
-  cout << "\nbw";
-  filter.bwFilter((currentDir+"imgs\\bw_image.jpg"))? (cout << " - (passed)"):(cout << " - (failed)");
+  string welcomeMsg = "Welcome to the ultimate image processor CPP app.";
+  cout << welcomeMsg << "\n";
+  cout << string(welcomeMsg.length()/5, ' ') << string(welcomeMsg.length()*3/5, '=') << string(welcomeMsg.length()/5, ' ');
 
-  // MY new commit
+
+
   return 0;
 }
