@@ -1,51 +1,185 @@
 #include "Image_Class.h"
 #include <stdexcept>
-#include <iostream>
-#include <string>
-using namespace std;
+#include "iostream"
+//using namespace std; // This load a lot of files into the project, use std:: better;
 
-string currentDir = "C:\\Users\\Mohammad\\CLionProjects\\cpp-img-processor\\imgs\\";
+
+class Filter {
+protected:
+  std::string outputFolderPath = "../../output/";
+public:
+  Filter() {}
+  virtual void apply(std::string outputFilendame) = 0;
+};
+
+class GreyFilter : public Filter {
+  Image image;
+public:
+  GreyFilter(Image image) : image(image) {}
+  void apply(std::string outputFilename) override {
+    try {
+        for (int i = 0; i < image.width; i++) {
+            for (int j = 0; j < image.height; j++) {
+
+                unsigned int avg = 0;
+
+                for (int k = 0; k < 3; k++) {
+                    avg += image(i, j, k);
+                }
+
+                avg /= image.channels; // average
+                for (int k = 0; k < image.channels; k++) {
+                    image(i, j, k) = avg;
+                }
+            }
+        }
+
+        image.saveImage(outputFolderPath + outputFilename);
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        throw;
+    }
+  }
+};
+
+class BwFilter : public Filter {
+  Image image;
+public:
+  BwFilter(Image image) : image(image) {}
+  void apply(std::string outputFilename) override {
+     try {
+        for (int i = 0; i < image.width; i++) {
+            for (int j = 0; j < image.height; j++) {
+
+                unsigned int avg = 0;
+                bool bw = false;
+
+                for (int k = 0; k < 3; k++) {
+                    avg += image(i, j, k);
+                }
+
+                avg /= image.channels; // average
+                avg >= 128 ? bw = true : bw = false;
+                for (int k = 0; k < image.channels; k++) {
+                    image(i, j, k) = bw ? 255 : 0;
+                }
+            }
+        }
+
+        image.saveImage(outputFolderPath + outputFilename);
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        throw;
+    }
+  }
+};
+
+class InvertFilter : public Filter {
+  Image image;
+public:
+  InvertFilter(Image image) : image(image) {}
+  void apply(std::string outputFilename) override {
+    try {
+      for (int i = 0; i < image.width; i++) {
+          for (int j = 0; j < image.height; j++) {
+              for (int k = 0; k < 3; k++) {
+                  image(i, j, k) = 255 - image(i, j, k);
+              }
+          }
+      }
+      image.saveImage(outputFolderPath + outputFilename);
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        throw;
+    }
+  }
+};
+
+class MergeFilter : public Filter {
+  Image base;
+  Image overlay;
+public:
+  MergeFilter(Image base, Image overlay) : base(base), overlay(overlay) {}
+  void apply(std::string outputFilename) override {
+    try {
+      int minHeight = std::min(base.height, overlay.height);
+      int minWidth  = std::min(base.width, overlay.width);
+
+      for (int i = 0; i < minWidth; i++) {
+          for (int j = 0; j < minHeight; j++) {
+              for (int k = 0; k < 3; k++) {
+                  base(i, j, k) = (base(i, j, k) + overlay(i, j, k)) / 2;
+              }
+          }
+      }
+
+      base.saveImage(outputFolderPath + outputFilename);
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        throw;
+    }
+  }
+};
 
 Image loadImage () {
-  cout << "Enter the image's name: "; string imgName; cin >> imgName;
+  std::cout << "Enter the image's name: "; std::string imgName; std::cin >> imgName;
 
-  string imgPath = currentDir + imgName;
-  // try { //TODO: Handle Errors with the User Without Breaking the Program
-    Image img(imgPath);
-    return img;
-  // }catch (invalid_argument error) {
-  //   cout << "Invalid filename, There are no images with this name.\n";
-  // }
+  std::string imgPath = "assets/" + imgName;
+  Image img(imgPath);
+  return img;
 
 }
 
+
 int main() {
-    string welcomeMsg = "\nWelcome to the ultimate image processor CPP app.";
-    cout << welcomeMsg << "\n";
-    cout << string(welcomeMsg.length()/5, ' ') << string(welcomeMsg.length()*3/5, '=') << string(welcomeMsg.length()/5, ' ') << "\n \n";
+
+  Image img("assets/img.jpg");
+  Image toy1("assets/toy1.jpg");
+  Image toy2("assets/toy2.jpg");
+
+
+  GreyFilter grey(img);
+  grey.apply("img.grey.jpg");
+
+  BwFilter bw(img);
+  bw.apply("img.bw.jpg");
+
+  InvertFilter invert(img);
+  invert.apply("img.invert.jpg");
+  
+  MergeFilter merge(toy1, toy2);  
+  merge.apply("toy1,toy2.jpg");
+
+    std::string welcomeMsg = "\nWelcome to the ultimate image processor CPP app.";
+    std::cout << welcomeMsg << "\n";
+    std::cout << std::string(welcomeMsg.length()/5, ' ') << std::string(welcomeMsg.length()*3/5, '=') << std::string(welcomeMsg.length()/5, ' ') << "\n \n";
 
     bool exited = false;
     bool fileLoaded = false; // default false
     while (!exited) {
 
 
-    cout << "Select by typing the number of the operation:\n";
+    std::cout << "Select by typing the number of the operation:\n";
 
-    cout << "1. Load an image to work on.\n";
+    std::cout << "1. Load an image to work on.\n";
     if (fileLoaded) {
-      cout << "Filters\n";
-      cout << "\t2. Black and White Filter.\n";
-      cout << "\t3. Grey Scale Filter.\n";
-      cout << "\t4. Invert Filter.\n";
+      std::cout << "Filters\n";
+      std::cout << "\t2. Black and White Filter.\n";
+      std::cout << "\t3. Grey Scale Filter.\n";
+      std::cout << "\t4. Invert Filter.\n";
     }
-    cout << "0. Exit.\n";
-    cout << "-------------------------------\n";
+    std::cout << "0. Exit.\n";
+    std::cout << "-------------------------------\n";
 
 
     int res;
-    cout << "Enter Your Response:\t";
-    cin >> res;
-    cout << '\n';
+    std::cout << "Enter Your Response:\t";
+    std::cin >> res;
+    std::cout << '\n';
 
 
     if (res == 1) {
@@ -60,89 +194,3 @@ int main() {
   return 0;
 }
 
-/*
-class Filter {
-private:
-  Image img;
-
-public:
-  Filter() {}
-
-  Filter(Image &mImg) { this->img = mImg; }
-
-  bool greyFilter(std::string outputFilename) {
-
-    try {
-      for (int i = 0; i < img.width; i++) {
-        for (int j = 0; j < img.height; j++) {
-
-          unsigned int avg = 0;
-
-          for (int k = 0; k < 3; k++) {
-            avg += img(i, j, k);
-          }
-
-          avg /= img.channels; // average
-          for (int k = 0; k < img.channels; k++) {
-            img(i, j, k) = avg;
-          }
-        }
-      }
-
-      img.saveImage(outputFilename);
-    } catch (std::invalid_argument e) {
-      throw std::invalid_argument(e);
-      return false;
-    }
-    return true;
-  }
-
-  bool bwFilter(std::string outputFilename) {
-
-    try {
-      for (int i = 0; i < img.width; i++) {
-        for (int j = 0; j < img.height; j++) {
-
-          unsigned int avg = 0;
-          bool bw = false;
-
-          for (int k = 0; k < 3; k++) {
-            avg += img(i, j, k);
-          }
-
-          avg /= img.channels; // average
-          avg >= 128 ? bw = true : bw = false;
-          for (int k = 0; k < img.channels; k++) {
-            img(i, j, k) = bw ? 255 : 0;
-          }
-        }
-      }
-
-      img.saveImage(outputFilename);
-    } catch (std::invalid_argument e) {
-      throw std::invalid_argument(e);
-      return false;
-    }
-    return true;
-  }
-
-  bool invertFilter(std::string outputFilename) {
-
-    try {
-      for (int i = 0; i < img.width; i++) {
-        for (int j = 0; j < img.height; j++) {
-          for (int k = 0; k < 3; k++) {
-            img(i, j, k) = 255 - img(i, j, k);
-          }
-        }
-      }
-
-      img.saveImage(outputFilename);
-    } catch (std::invalid_argument e) {
-      throw std::invalid_argument(e);
-      return false;
-    }
-    return true;
-  }
-};
-*/
