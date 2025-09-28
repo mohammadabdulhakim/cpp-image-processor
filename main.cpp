@@ -3,6 +3,7 @@
 #include "iostream"
 //using namespace std; // This load a lot of files into the project, use std:: better;
 
+
 class Filter {
 protected:
   std::string outputFolderPath = "../../output/";
@@ -124,7 +125,6 @@ public:
   }
 };
 
-
 Image loadImage () {
   std::cout << "Enter the image's name: "; std::string imgName; std::cin >> imgName;
 
@@ -193,3 +193,4 @@ int main() {
 
   return 0;
 }
+
