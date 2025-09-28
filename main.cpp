@@ -1,7 +1,7 @@
 #include "Image_Class.h"
 #include <stdexcept>
 #include "iostream"
-//using namespace std; // This load a lot of files into the project, use std:: better;
+using namespace std; // This load a lot of files into the project, use std:: better;
 
 
 class Filter {
@@ -9,14 +9,14 @@ protected:
   std::string outputFolderPath = "../../output/";
 public:
   Filter() {}
-  virtual void apply(std::string outputFilendame) = 0;
+  virtual void apply() = 0;
 };
 
 class GreyFilter : public Filter {
-  Image image;
+  Image &image;
 public:
-  GreyFilter(Image image) : image(image) {}
-  void apply(std::string outputFilename) override {
+  GreyFilter(Image &image) : image(image) {}
+  void apply() override {
     try {
         for (int i = 0; i < image.width; i++) {
             for (int j = 0; j < image.height; j++) {
@@ -33,8 +33,6 @@ public:
                 }
             }
         }
-
-        image.saveImage(outputFolderPath + outputFilename);
     }
     catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
@@ -43,6 +41,7 @@ public:
   }
 };
 
+/*
 class BwFilter : public Filter {
   Image image;
 public:
@@ -124,53 +123,40 @@ public:
     }
   }
 };
+*/
 
-Image loadImage () {
-  std::cout << "Enter the image's name: "; std::string imgName; std::cin >> imgName;
+void loadImage (Image &img) {
+  cout << "Enter the image's name: "; std::string imgName; std::cin >> imgName;
 
-  std::string imgPath = "assets/" + imgName;
-  Image img(imgPath);
-  return img;
+  string imgPath = "assets/" + imgName;
+  img.loadNewImage(imgPath);
+}
 
+void saveImage (Image &img) {
+  cout << "Enter the name of the new image: "; string imgName; cin >> imgName;
+
+  img.saveImage(("C:\\Users\\Mohammad\\CLionProjects\\cpp-img-processor\\output\\"+imgName));
 }
 
 
 int main() {
+    string welcomeMsg = "\nWelcome to the ultimate image processor CPP app.";
+    cout << welcomeMsg << "\n";
+    cout << std::string(welcomeMsg.length()/5, ' ') << std::string(welcomeMsg.length()*3/5, '=') << std::string(welcomeMsg.length()/5, ' ') << "\n \n";
 
-  Image img("assets/img.jpg");
-  Image toy1("assets/toy1.jpg");
-  Image toy2("assets/toy2.jpg");
-
-
-  GreyFilter grey(img);
-  grey.apply("img.grey.jpg");
-
-  BwFilter bw(img);
-  bw.apply("img.bw.jpg");
-
-  InvertFilter invert(img);
-  invert.apply("img.invert.jpg");
-  
-  MergeFilter merge(toy1, toy2);  
-  merge.apply("toy1,toy2.jpg");
-
-    std::string welcomeMsg = "\nWelcome to the ultimate image processor CPP app.";
-    std::cout << welcomeMsg << "\n";
-    std::cout << std::string(welcomeMsg.length()/5, ' ') << std::string(welcomeMsg.length()*3/5, '=') << std::string(welcomeMsg.length()/5, ' ') << "\n \n";
-
+    Image img;
     bool exited = false;
     bool fileLoaded = false; // default false
     while (!exited) {
-
-
-    std::cout << "Select by typing the number of the operation:\n";
+    std::cout << "\nSelect by typing the number of the operation:\n";
 
     std::cout << "1. Load an image to work on.\n";
     if (fileLoaded) {
       std::cout << "Filters\n";
-      std::cout << "\t2. Black and White Filter.\n";
-      std::cout << "\t3. Grey Scale Filter.\n";
+      std::cout << "\t2. Grayscale Conversion Filter.\n";
+      std::cout << "\t3. Black and White Filter.\n";
       std::cout << "\t4. Invert Filter.\n";
+      std::cout << "\t-1. Save the Image.\n";
     }
     std::cout << "0. Exit.\n";
     std::cout << "-------------------------------\n";
@@ -181,11 +167,16 @@ int main() {
     std::cin >> res;
     std::cout << '\n';
 
-
     if (res == 1) {
-        Image img = loadImage();
+         loadImage(img);
         fileLoaded = true;
-    } else {
+    } else if (res == 2 && fileLoaded) {
+        GreyFilter grey(img);
+        grey.apply();
+    } else if (res == -1 && fileLoaded) {
+        saveImage(img);
+    }
+    else {
         exited = true;
     }
   }
