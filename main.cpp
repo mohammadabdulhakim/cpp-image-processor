@@ -66,18 +66,14 @@ class BWFilter : public Filter {
 };
 
 
-
-
-/*
 class MergeFilter : public Filter {
-  Image base;
-  Image overlay;
+  Image &base;
+  Image &overlay;
 public:
   MergeFilter(Image base, Image overlay) : base(base), overlay(overlay) {}
-  void apply(std::string outputFilename) override {
-    try {
-      int minHeight = std::min(base.height, overlay.height);
-      int minWidth  = std::min(base.width, overlay.width);
+  void apply() override {
+      int minHeight = min(base.height, overlay.height);
+      int minWidth  = min(base.width, overlay.width);
 
       for (int i = 0; i < minWidth; i++) {
           for (int j = 0; j < minHeight; j++) {
@@ -86,16 +82,9 @@ public:
               }
           }
       }
-
-      base.saveImage(outputFolderPath + outputFilename);
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        throw;
-    }
   }
 };
-*/
+
 
 void loadImage (Image &img) {
   cout << "Enter the image's name: "; std::string imgName; std::cin >> imgName;
@@ -122,23 +111,24 @@ int main() {
     while (!exited) {
     std::cout << "\nSelect by typing the number of the operation:\n";
 
-    std::cout << "1. Load an image to work on.\n";
+    cout << "1. Load an image to work on.\n";
     if (fileLoaded) {
-      std::cout << "Filters\n";
-      std::cout << "\t2. Grayscale Conversion Filter.\n";
-      std::cout << "\t3. Black and White Filter.\n";
-      std::cout << "\t4. Invert Filter.\n";
-      std::cout << "\t-1. Save the Image.\n";
+      cout << "Filters\n";
+      cout << "\t2. Grayscale Conversion Filter.\n";
+      cout << "\t3. Black and White Filter.\n";
+      cout << "\t4. Invert Filter.\n";
+      cout << "\t-1. Save the Image.\n";
     }
-    std::cout << "0. Exit.\n";
-    std::cout << "-------------------------------\n";
+    cout << "0. Exit.\n";
+    cout << "-------------------------------\n";
 
 
     int res;
-    std::cout << "Enter Your Response:\t";
-    std::cin >> res;
-    std::cout << '\n';
+    cout << "Enter Your Response:\t";
+    cin >> res;
+    cout << '\n';
 
+    // Add Filters Applications Here ----------------------------------------------
     if (res == 1) {
          loadImage(img);
         fileLoaded = true;
@@ -150,13 +140,13 @@ int main() {
         BWFilter bw(img);
         bw.apply();
     }
-
-        else if (res == -1 && fileLoaded) {
-        saveImage(img);
+    else if (res == -1 && fileLoaded) {
+    saveImage(img);
     }
     else {
         exited = true;
     }
+    // -------------------------------------------------------------------
   }
 
 
