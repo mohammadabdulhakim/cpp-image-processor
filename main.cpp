@@ -1,3 +1,5 @@
+#include <complex>
+
 #include "Image_Class.h"
 #include <stdexcept>
 #include "iostream"
@@ -40,6 +42,31 @@ public:
     }
   }
 };
+
+class BWFilter : public Filter {
+    Image &image;
+    public:
+        BWFilter (Image &img) :image(img) {};
+        void apply() override {
+            for (int i = 0; i < image.width; i++) {
+                for (int j = 0; j<image.height; j++) {
+                    unsigned short avg = 0;
+                    for (int k =0; k< image.channels; k++) {
+                        avg += image(i, j, k);
+                    }
+
+                    avg /= image.channels;
+
+                    for (int k =0; k< image.channels; k++) {
+                        image(i, j, k) = (avg >= (100)? 255:0);
+                    }
+                }
+            }
+        };
+};
+
+
+
 
 /*
 class BwFilter : public Filter {
@@ -135,7 +162,7 @@ void loadImage (Image &img) {
 void saveImage (Image &img) {
   cout << "Enter the name of the new image: "; string imgName; cin >> imgName;
 
-  img.saveImage(("C:\\Users\\Mohammad\\CLionProjects\\cpp-img-processor\\output\\"+imgName));
+  img.saveImage(("C:\\Users\\Mohammad\\CLionProjects\\cpp-img-processor\\output\\"+imgName+".jpg"));
 }
 
 
@@ -173,7 +200,13 @@ int main() {
     } else if (res == 2 && fileLoaded) {
         GreyFilter grey(img);
         grey.apply();
-    } else if (res == -1 && fileLoaded) {
+    }
+    else if (res == 3 && fileLoaded) {
+        BWFilter bw(img);
+        bw.apply();
+    }
+
+        else if (res == -1 && fileLoaded) {
         saveImage(img);
     }
     else {
