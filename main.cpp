@@ -85,6 +85,56 @@ public:
   }
 };
 
+class FlipFilter : public Filter {
+    Image &image;
+    char dir = 'h';
+public:
+    FlipFilter(Image &img) : image(img) {}
+    void getFlippingDirection () {
+        cout << "Do you want to flip the image (v)ertically or (h)orizontally: "; cin >> dir;
+    }
+
+    void apply() override {
+        if (dir == 'h') {
+            for (int i = 0; i < image.height; i++) {
+                for (int j = 0; j<image.width/2; j++) {
+                    int tempChannels[3] = {0};
+                    for (int k = 0; k<image.channels; k++) {
+                        tempChannels[k] = image(j,i,k);
+                    }
+
+                    for (int k = 0; k<image.channels; k++) {
+                        image(j,i,k) = image(image.width-j, i, k);
+                    }
+
+                    for (int k = 0; k<image.channels; k++) {
+                        image(image.width-j, i, k) = tempChannels[k];
+                    }
+                }
+            }
+        }
+        else {
+            for (int j = 0; j < image.width; j++) {
+                for (int i = 0; i<image.height/2; i++) {
+                    int tempChannels[3] = {0};
+                    for (int k = 0; k<image.channels; k++) {
+                        tempChannels[k] = image(j,i,k);
+                    }
+
+                    // for (int k = 0; k<image.channels; k++) {
+                    //     image(j,i,k) = image(j, image.height-i, k);
+                    // }
+
+                    // for (int k = 0; k<image.channels; k++) {
+                    //     image(j, image.height-i, k) = tempChannels[k];
+                    // }
+                }
+            }
+        }
+    }
+};
+
+
 
 void loadImage (Image &img) {
   cout << "Enter the image's name: "; std::string imgName; std::cin >> imgName;
@@ -116,7 +166,9 @@ int main() {
       cout << "Filters\n";
       cout << "\t2. Grayscale Conversion Filter.\n";
       cout << "\t3. Black and White Filter.\n";
-      cout << "\t4. Invert Filter.\n";
+      // cout << "\t4. Invert Filter.\n";
+      // cout << "\t5. Filter.\n";
+      cout << "\t6. Flipping Filter.\n";
       cout << "\t-1. Save the Image.\n";
     }
     cout << "0. Exit.\n";
@@ -139,6 +191,12 @@ int main() {
     else if (res == 3 && fileLoaded) {
         BWFilter bw(img);
         bw.apply();
+    }
+
+    else if (res == 6 && fileLoaded) {
+        FlipFilter flipFilter(img);
+        flipFilter.getFlippingDirection();
+        flipFilter.apply();
     }
     else if (res == -1 && fileLoaded) {
     saveImage(img);
