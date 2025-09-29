@@ -47,3 +47,7 @@ dist/
 Thumbs.db
 ehthumbs.db
 desktop.ini
+
+
+# ------ Filter Tests --------
+/output/*

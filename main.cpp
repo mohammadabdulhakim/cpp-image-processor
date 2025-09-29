@@ -1,7 +1,9 @@
+#include <complex>
 #include "Image_Class.h"
 #include <stdexcept>
 #include "iostream"
 #include <corecrt_math_defines.h>
+
 
 
 class Filter {
@@ -9,14 +11,12 @@ protected:
   std::string outputFolderPath = "../../output/";
 public:
   Filter() {}
-  virtual void apply(std::string outputFilendame) = 0;
+  virtual void apply(std::string outputFilename) = 0;
 };
 class GreyFilter : public Filter {
-  Image image;
+  Image &image;
 public:
-  GreyFilter(Image image) {
-    this->image = image;
-  }
+  GreyFilter(Image &image) : image(image) {}
   void apply(std::string outputFilename) override {
     try {
         for (int i = 0; i < image.width; i++) {
@@ -34,8 +34,6 @@ public:
                 }
             }
         }
-
-        image.saveImage(outputFolderPath + outputFilename);
     }
     catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
@@ -49,31 +47,25 @@ public:
   BwFilter(Image image) : image(image) {}
   void apply(std::string outputFilename) override {
      try {
-        for (int i = 0; i < image.width; i++) {
-            for (int j = 0; j < image.height; j++) {
+            for (int i = 0; i < image.width; i++) {
+                for (int j = 0; j<image.height; j++) {
+                    unsigned short avg = 0;
+                    for (int k =0; k< image.channels; k++) {
+                        avg += image(i, j, k);
+                    }
+                    avg /= image.channels;
 
-                unsigned int avg = 0;
-                bool bw = false;
-
-                for (int k = 0; k < 3; k++) {
-                    avg += image(i, j, k);
-                }
-
-                avg /= image.channels; // average
-                avg >= 128 ? bw = true : bw = false;
-                for (int k = 0; k < image.channels; k++) {
-                    image(i, j, k) = bw ? 255 : 0;
+                    for (int k =0; k< image.channels; k++) {
+                        image(i, j, k) = (avg >= (100)? 255:0);
+                    }
                 }
             }
         }
-
-        image.saveImage(outputFolderPath + outputFilename);
-    }
-    catch (const std::exception& e) {
+        catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         throw;
     }
-  }
+}
 };
 class InvertFilter : public Filter {
   Image image;
@@ -96,13 +88,13 @@ public:
     }
   }
 };
+
 class MergeFilter : public Filter {
-  Image base;
-  Image overlay;
+  Image &base;
+  Image &overlay;
 public:
   MergeFilter(Image base, Image overlay) : base(base), overlay(overlay) {}
   void apply(std::string outputFilename) override {
-    try {
       int minHeight = std::min(base.height, overlay.height);
       int minWidth  = std::min(base.width, overlay.width);
 
@@ -113,13 +105,6 @@ public:
               }
           }
       }
-
-      base.saveImage(outputFolderPath + outputFilename);
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        throw;
-    }
   }
 };
 class RotateFilter : public Filter {
@@ -174,16 +159,24 @@ public:
   }
 };
 
-Image loadImage () {
-  std::cout << "Enter the image's name: "; std::string imgName; std::cin >> imgName;
 
-  std::string imgPath = "assets/" + imgName;
-  Image img(imgPath);
-  return img;
+// void loadImage (Image &img) {
+//   std::cout << "Enter the image's name: "; std::string imgName; std::cin >> imgName;
 
+//   std::string imgPath = "assets/" + imgName;
+//   img.loadNewImage(imgPath);
+// }
+
+void saveImage (Image &img) {
+  std::cout << "Enter the name of the new image: "; std::string imgName; std::cin >> imgName;
+
+  img.saveImage(("C:\\Users\\Mohammad\\CLionProjects\\cpp-img-processor\\output\\"+imgName+".jpg"));
 }
 
 int main() {
+    std::string welcomeMsg = "\nWelcome to the ultimate image processor CPP app.";
+    std::cout << welcomeMsg << "\n";
+    std::cout << std::string(welcomeMsg.length()/5, ' ') << std::string(welcomeMsg.length()*3/5, '=') << std::string(welcomeMsg.length()/5, ' ') << "\n \n";
 
   Image img("assets/img.jpg");
   Image toy1("assets/toy1.jpg");
@@ -239,7 +232,7 @@ int main() {
 
 
   if (res == 1) {
-      Image img = loadImage();
+      // Image img = loadImage();
       fileLoaded = true;
   } else {
       exited = true;
