@@ -104,11 +104,11 @@ public:
                     }
 
                     for (int k = 0; k<image.channels; k++) {
-                        image(j,i,k) = image(image.width-j, i, k);
+                        image(j,i,k) = image(image.width-j-1, i, k);
                     }
 
                     for (int k = 0; k<image.channels; k++) {
-                        image(image.width-j, i, k) = tempChannels[k];
+                        image(image.width-j-1, i, k) = tempChannels[k];
                     }
                 }
             }
@@ -121,13 +121,13 @@ public:
                         tempChannels[k] = image(j,i,k);
                     }
 
-                    // for (int k = 0; k<image.channels; k++) {
-                    //     image(j,i,k) = image(j, image.height-i, k);
-                    // }
+                    for (int k = 0; k<image.channels; k++) {
+                        image(j,i,k) = image(j, image.height-i-1, k);
+                    }
 
-                    // for (int k = 0; k<image.channels; k++) {
-                    //     image(j, image.height-i, k) = tempChannels[k];
-                    // }
+                    for (int k = 0; k<image.channels; k++) {
+                        image(j, image.height-i-1, k) = tempChannels[k];
+                    }
                 }
             }
         }
