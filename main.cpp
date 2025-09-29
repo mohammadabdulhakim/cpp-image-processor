@@ -1,8 +1,10 @@
 #include <complex>
-
 #include "Image_Class.h"
 #include <stdexcept>
 #include "iostream"
+#define _USE_MATH_DEFINES
+#include<cmath>
+
 using namespace std; // This load a lot of files into the project, use std:: better;
 
 
