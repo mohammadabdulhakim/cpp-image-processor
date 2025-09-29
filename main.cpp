@@ -2,134 +2,149 @@
 #include "Image_Class.h"
 #include <stdexcept>
 #include "iostream"
-#define _USE_MATH_DEFINES
-#include<cmath>
-
+#include <cmath>
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 using namespace std; // This load a lot of files into the project, use std:: better;
 
 
 class Filter {
 protected:
-  std::string outputFolderPath = "../../output/";
+    std::string outputFolderPath = "../../output/";
 public:
-  Filter() {}
-  virtual void apply() = 0;
+    Filter() {}
+    virtual void apply() = 0;
 };
 
 class GreyFilter : public Filter {
-  Image &image;
+    Image& image;
 public:
-  GreyFilter(Image &image) : image(image) {}
-  void apply() override {
-    try {
-        for (int i = 0; i < image.width; i++) {
-            for (int j = 0; j < image.height; j++) {
-
-                unsigned int avg = 0;
-
-                for (int k = 0; k < 3; k++) {
-                    avg += image(i, j, k);
-                }
-
-                avg /= image.channels; // average
-                for (int k = 0; k < image.channels; k++) {
-                    image(i, j, k) = avg;
-                }
-            }
-        }
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        throw;
-    }
-  }
-};
-
-class BWFilter : public Filter {
-    Image &image;
-    public:
-        BWFilter (Image &img) :image(img) {};
-        void apply() override {
+    GreyFilter(Image& image) : image(image) {}
+    void apply() override {
+        try {
             for (int i = 0; i < image.width; i++) {
-                for (int j = 0; j<image.height; j++) {
-                    unsigned short avg = 0;
-                    for (int k =0; k< image.channels; k++) {
+                for (int j = 0; j < image.height; j++) {
+
+                    unsigned int avg = 0;
+
+                    for (int k = 0; k < 3; k++) {
                         avg += image(i, j, k);
                     }
 
-                    avg /= image.channels;
-
-                    for (int k =0; k< image.channels; k++) {
-                        image(i, j, k) = (avg >= (100)? 255:0);
+                    avg /= image.channels; // average
+                    for (int k = 0; k < image.channels; k++) {
+                        image(i, j, k) = avg;
                     }
                 }
             }
-        };
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+            throw;
+        }
+    }
+};
+
+class BWFilter : public Filter {
+    Image& image;
+public:
+    BWFilter(Image& img) :image(img) {};
+    void apply() override {
+        for (int i = 0; i < image.width; i++) {
+            for (int j = 0; j < image.height; j++) {
+                unsigned short avg = 0;
+                for (int k = 0; k < image.channels; k++) {
+                    avg += image(i, j, k);
+                }
+
+                avg /= image.channels;
+
+                for (int k = 0; k < image.channels; k++) {
+                    image(i, j, k) = (avg >= (100) ? 255 : 0);
+                }
+            }
+        }
+    };
 };
 
 
 class MergeFilter : public Filter {
-  Image &base;
-  Image &overlay;
+    Image& base;
+    Image& overlay;
 public:
-  MergeFilter(Image base, Image overlay) : base(base), overlay(overlay) {}
-  void apply() override {
-      int minHeight = min(base.height, overlay.height);
-      int minWidth  = min(base.width, overlay.width);
+    MergeFilter(Image base, Image overlay) : base(base), overlay(overlay) {}
+    void apply() override {
+        int minHeight = min(base.height, overlay.height);
+        int minWidth = min(base.width, overlay.width);
 
-      for (int i = 0; i < minWidth; i++) {
-          for (int j = 0; j < minHeight; j++) {
-              for (int k = 0; k < 3; k++) {
-                  base(i, j, k) = (base(i, j, k) + overlay(i, j, k)) / 2;
-              }
-          }
-      }
-  }
+        for (int i = 0; i < minWidth; i++) {
+            for (int j = 0; j < minHeight; j++) {
+                for (int k = 0; k < 3; k++) {
+                    base(i, j, k) = (base(i, j, k) + overlay(i, j, k)) / 2;
+                }
+            }
+        }
+    }
 };
 
 class FlipFilter : public Filter {
-    Image &image;
+    Image& image;
     char dir = 'h';
 public:
-    FlipFilter(Image &img) : image(img) {}
-    void getFlippingDirection () {
+    FlipFilter(Image& img) : image(img) {}
+    void getFlippingDirection() {
         cout << "Do you want to flip the image (v)ertically or (h)orizontally: "; cin >> dir;
     }
 
     void apply() override {
         if (dir == 'h') {
             for (int i = 0; i < image.height; i++) {
-                for (int j = 0; j<image.width/2; j++) {
-                    int tempChannels[3] = {0};
-                    for (int k = 0; k<image.channels; k++) {
-                        tempChannels[k] = image(j,i,k);
+                for (int j = 0; j < image.width / 2; j++) {
+                    int tempChannels[3] = { 0 };
+                    for (int k = 0; k < image.channels; k++) {
+                        tempChannels[k] = image(j, i, k);
                     }
 
-                    for (int k = 0; k<image.channels; k++) {
-                        image(j,i,k) = image(image.width-j-1, i, k);
+                    for (int k = 0; k < image.channels; k++) {
+                        image(j, i, k) = image(image.width - j - 1, i, k);
                     }
 
-                    for (int k = 0; k<image.channels; k++) {
-                        image(image.width-j-1, i, k) = tempChannels[k];
+                    for (int k = 0; k < image.channels; k++) {
+                        image(image.width - j - 1, i, k) = tempChannels[k];
                     }
                 }
             }
         }
         else {
             for (int j = 0; j < image.width; j++) {
-                for (int i = 0; i<image.height/2; i++) {
-                    int tempChannels[3] = {0};
-                    for (int k = 0; k<image.channels; k++) {
-                        tempChannels[k] = image(j,i,k);
+                for (int i = 0; i < image.height / 2; i++) {
+                    int tempChannels[3] = { 0 };
+                    for (int k = 0; k < image.channels; k++) {
+                        tempChannels[k] = image(j, i, k);
                     }
 
-                    for (int k = 0; k<image.channels; k++) {
-                        image(j,i,k) = image(j, image.height-i-1, k);
+                    for (int k = 0; k < image.channels; k++) {
+                        image(j, i, k) = image(j, image.height - i - 1, k);
                     }
 
-                    for (int k = 0; k<image.channels; k++) {
-                        image(j, image.height-i-1, k) = tempChannels[k];
+                    for (int k = 0; k < image.channels; k++) {
+                        image(j, image.height - i - 1, k) = tempChannels[k];
                     }
+                }
+            }
+        }
+    }
+};
+class InvertFilter : public Filter {
+    Image& image;
+public:
+    InvertFilter(Image& img) : image(img) {}
+    void apply() override {
+        for (int i = 0; i < image.width; i++) {
+            for (int j = 0; j < image.height; j++) {
+                for (int k = 0; k < image.channels; k++) {
+                    image(i, j, k) = 255 - image(i, j, k);
                 }
             }
         }
@@ -140,20 +155,20 @@ class RotateFilter : public Filter {
     Image image;
     int angle;
 public:
-    RotateFilter(Image image, int angle) : image(image), angle(angle) {}
+    RotateFilter(Image &image, int angle) : image(image), angle(angle) {}
     void apply() override {
         try {
             Image rotated_image;
 
             switch (angle)
             {
-                case 90:
-                case 270:
-                    rotated_image = Image(image.height, image.width);
+            case 90:
+            case 270:
+                rotated_image = Image(image.height, image.width);
                 break;
 
-                case 180:
-                    rotated_image = Image(image.width, image.height);
+            case 180:
+                rotated_image = Image(image.width, image.height);
                 break;
             }
 
@@ -164,7 +179,7 @@ public:
 
             int cx = image.width / 2;
             int cy = image.height / 2;
-          
+
             for (int x = 0; x < rotated_image.width; x++)
             {
                 for (int y = 0; y < rotated_image.height; y++)
@@ -192,78 +207,88 @@ public:
 
 
 
-void loadImage (Image &img) {
-  cout << "Enter the image's name: "; std::string imgName; std::cin >> imgName;
+void loadImage(Image& img) {
+    cout << "Enter the image's name: "; std::string imgName; std::cin >> imgName;
 
-  string imgPath = "assets/" + imgName;
-  img.loadNewImage(imgPath);
+    string imgPath = "assets/" + imgName;
+    img.loadNewImage(imgPath);
 }
 
-void saveImage (Image &img) {
-  cout << "Enter the name of the new image: "; string imgName; cin >> imgName;
+void saveImage(Image& img) {
+    cout << "Enter the name of the new image: "; string imgName; cin >> imgName;
 
-  img.saveImage(("C:\\Users\\Mohammad\\CLionProjects\\cpp-img-processor\\output\\"+imgName+".jpg"));
+    img.saveImage(("C:\\Users\\Mohammad\\CLionProjects\\cpp-img-processor\\output\\" + imgName + ".jpg"));
 }
 
 
 int main() {
     string welcomeMsg = "\nWelcome to the ultimate image processor CPP app.";
     cout << welcomeMsg << "\n";
-    cout << std::string(welcomeMsg.length()/5, ' ') << std::string(welcomeMsg.length()*3/5, '=') << std::string(welcomeMsg.length()/5, ' ') << "\n \n";
+    cout << std::string(welcomeMsg.length() / 5, ' ') << std::string(welcomeMsg.length() * 3 / 5, '=') << std::string(welcomeMsg.length() / 5, ' ') << "\n \n";
 
     Image img;
     bool exited = false;
     bool fileLoaded = false; // default false
     while (!exited) {
-    std::cout << "\nSelect by typing the number of the operation:\n";
+        std::cout << "\nSelect by typing the number of the operation:\n";
 
-    cout << "1. Load an image to work on.\n";
-    if (fileLoaded) {
-      cout << "Filters\n";
-      cout << "\t2. Grayscale Conversion Filter.\n";
-      cout << "\t3. Black and White Filter.\n";
-      // cout << "\t4. Invert Filter.\n";
-      // cout << "\t5. Filter.\n";
-      cout << "\t6. Flipping Filter.\n";
-      cout << "\t-1. Save the Image.\n";
+        cout << "1. Load an image to work on.\n";
+        if (fileLoaded) {
+            cout << "Filters\n";
+            cout << "\t2. Grayscale Conversion Filter.\n";
+            cout << "\t3. Black and White Filter.\n";
+            cout << "\t4. Invert Filter.\n";
+             cout << "\t5.rotate Filter.\n";
+            cout << "\t6. Flipping Filter.\n";
+            cout << "\t-1. Save the Image.\n";
+        }
+        cout << "0. Exit.\n";
+        cout << "-------------------------------\n";
+
+
+        int res;
+        cout << "Enter Your Response:\t";
+        cin >> res;
+        cout << '\n';
+
+        // Add Filters Applications Here ----------------------------------------------
+        if (res == 1) {
+            loadImage(img);
+            fileLoaded = true;
+        }
+        else if (res == 2 && fileLoaded) {
+            GreyFilter grey(img);
+            grey.apply();
+        }
+        else if (res == 3 && fileLoaded) {
+            BWFilter bw(img);
+            bw.apply();
+        }
+        else if (res == 4 && fileLoaded) {
+            InvertFilter Inverted_image(img);
+            Inverted_image.apply();
+        }
+        else if (res == 5 && fileLoaded) {
+            int angle;
+            cout << "Enter rotation angle (90 / 180 / 270): ";
+            cin >> angle;
+            RotateFilter rotaded_image(img , angle);
+            rotaded_image.apply();
+        }
+        else if (res == 6 && fileLoaded) {
+            FlipFilter flipFilter(img);
+            flipFilter.getFlippingDirection();
+            flipFilter.apply();
+        }
+        else if (res == -1 && fileLoaded) {
+            saveImage(img);
+        }
+        else {
+            exited = true;
+        }
+        // -------------------------------------------------------------------
     }
-    cout << "0. Exit.\n";
-    cout << "-------------------------------\n";
 
 
-    int res;
-    cout << "Enter Your Response:\t";
-    cin >> res;
-    cout << '\n';
-
-    // Add Filters Applications Here ----------------------------------------------
-    if (res == 1) {
-         loadImage(img);
-        fileLoaded = true;
-    } else if (res == 2 && fileLoaded) {
-        GreyFilter grey(img);
-        grey.apply();
-    }
-    else if (res == 3 && fileLoaded) {
-        BWFilter bw(img);
-        bw.apply();
-    }
-
-    else if (res == 6 && fileLoaded) {
-        FlipFilter flipFilter(img);
-        flipFilter.getFlippingDirection();
-        flipFilter.apply();
-    }
-    else if (res == -1 && fileLoaded) {
-    saveImage(img);
-    }
-    else {
-        exited = true;
-    }
-    // -------------------------------------------------------------------
-  }
-
-
-  return 0;
+    return 0;
 }
-
