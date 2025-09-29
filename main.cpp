@@ -69,61 +69,6 @@ class BWFilter : public Filter {
 
 
 /*
-class BwFilter : public Filter {
-  Image image;
-public:
-  BwFilter(Image image) : image(image) {}
-  void apply(std::string outputFilename) override {
-     try {
-        for (int i = 0; i < image.width; i++) {
-            for (int j = 0; j < image.height; j++) {
-
-                unsigned int avg = 0;
-                bool bw = false;
-
-                for (int k = 0; k < 3; k++) {
-                    avg += image(i, j, k);
-                }
-
-                avg /= image.channels; // average
-                avg >= 128 ? bw = true : bw = false;
-                for (int k = 0; k < image.channels; k++) {
-                    image(i, j, k) = bw ? 255 : 0;
-                }
-            }
-        }
-
-        image.saveImage(outputFolderPath + outputFilename);
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        throw;
-    }
-  }
-};
-
-class InvertFilter : public Filter {
-  Image image;
-public:
-  InvertFilter(Image image) : image(image) {}
-  void apply(std::string outputFilename) override {
-    try {
-      for (int i = 0; i < image.width; i++) {
-          for (int j = 0; j < image.height; j++) {
-              for (int k = 0; k < 3; k++) {
-                  image(i, j, k) = 255 - image(i, j, k);
-              }
-          }
-      }
-      image.saveImage(outputFolderPath + outputFilename);
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        throw;
-    }
-  }
-};
-
 class MergeFilter : public Filter {
   Image base;
   Image overlay;
