@@ -1,9 +1,9 @@
-#include <complex>
 #include "Image_Class.h"
 #include <stdexcept>
 #include "iostream"
-#include <corecrt_math_defines.h>
-
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 
 class Filter {
@@ -11,12 +11,13 @@ protected:
   std::string outputFolderPath = "../../output/";
 public:
   Filter() {}
-  virtual void apply(std::string outputFilename) = 0;
+  virtual void apply(std::string outputFilendame) = 0;
 };
+
 class GreyFilter : public Filter {
-  Image &image;
+  Image image;
 public:
-  GreyFilter(Image &image) : image(image) {}
+  GreyFilter(Image image) : image(image) {}
   void apply(std::string outputFilename) override {
     try {
         for (int i = 0; i < image.width; i++) {
@@ -34,6 +35,8 @@ public:
                 }
             }
         }
+
+        image.saveImage(outputFolderPath + outputFilename);
     }
     catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
@@ -41,32 +44,40 @@ public:
     }
   }
 };
+
 class BwFilter : public Filter {
   Image image;
 public:
   BwFilter(Image image) : image(image) {}
   void apply(std::string outputFilename) override {
      try {
-            for (int i = 0; i < image.width; i++) {
-                for (int j = 0; j<image.height; j++) {
-                    unsigned short avg = 0;
-                    for (int k =0; k< image.channels; k++) {
-                        avg += image(i, j, k);
-                    }
-                    avg /= image.channels;
+        for (int i = 0; i < image.width; i++) {
+            for (int j = 0; j < image.height; j++) {
 
-                    for (int k =0; k< image.channels; k++) {
-                        image(i, j, k) = (avg >= (100)? 255:0);
-                    }
+                unsigned int avg = 0;
+                bool bw = false;
+
+                for (int k = 0; k < 3; k++) {
+                    avg += image(i, j, k);
+                }
+
+                avg /= image.channels; // average
+                avg >= 128 ? bw = true : bw = false;
+                for (int k = 0; k < image.channels; k++) {
+                    image(i, j, k) = bw ? 255 : 0;
                 }
             }
         }
-        catch (const std::exception& e) {
+
+        image.saveImage(outputFolderPath + outputFilename);
+    }
+    catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         throw;
     }
-}
+  }
 };
+
 class InvertFilter : public Filter {
   Image image;
 public:
@@ -90,11 +101,12 @@ public:
 };
 
 class MergeFilter : public Filter {
-  Image &base;
-  Image &overlay;
+  Image base;
+  Image overlay;
 public:
   MergeFilter(Image base, Image overlay) : base(base), overlay(overlay) {}
   void apply(std::string outputFilename) override {
+    try {
       int minHeight = std::min(base.height, overlay.height);
       int minWidth  = std::min(base.width, overlay.width);
 
@@ -105,16 +117,24 @@ public:
               }
           }
       }
+
+      base.saveImage(outputFolderPath + outputFilename);
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        throw;
+    }
   }
 };
+
 class RotateFilter : public Filter {
   Image image;
   int angle;
-  int w, h;
 public:
   RotateFilter(Image image, int angle) : image(image), angle(angle) {}
   void apply(std::string outputFilename) override {
-        Image rotated_image;
+    try {
+    Image rotated_image;
 
     switch (angle)
     {
@@ -128,7 +148,7 @@ public:
         break;
     }
 
-
+   
     double radian = angle * M_PI / 180.0;
     double cos_Angle = cos(radian);
     double sin_Angle = sin(radian);
@@ -155,28 +175,28 @@ public:
             }
         }
     }
+
     rotated_image.saveImage(outputFolderPath + outputFilename);
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        throw;
+    }
   }
 };
 
 
-// void loadImage (Image &img) {
-//   std::cout << "Enter the image's name: "; std::string imgName; std::cin >> imgName;
+Image loadImage () {
+  std::cout << "Enter the image's name: "; std::string imgName; std::cin >> imgName;
 
-//   std::string imgPath = "assets/" + imgName;
-//   img.loadNewImage(imgPath);
-// }
+  std::string imgPath = "assets/" + imgName;
+  Image img(imgPath);
+  return img;
 
-void saveImage (Image &img) {
-  std::cout << "Enter the name of the new image: "; std::string imgName; std::cin >> imgName;
-
-  img.saveImage(("C:\\Users\\Mohammad\\CLionProjects\\cpp-img-processor\\output\\"+imgName+".jpg"));
 }
 
+
 int main() {
-    std::string welcomeMsg = "\nWelcome to the ultimate image processor CPP app.";
-    std::cout << welcomeMsg << "\n";
-    std::cout << std::string(welcomeMsg.length()/5, ' ') << std::string(welcomeMsg.length()*3/5, '=') << std::string(welcomeMsg.length()/5, ' ') << "\n \n";
 
   Image img("assets/img.jpg");
   Image toy1("assets/toy1.jpg");
@@ -195,50 +215,43 @@ int main() {
   MergeFilter merge(toy1, toy2);  
   merge.apply("toy1,toy2.jpg");
 
-  RotateFilter rotate_90(toy1, 90);
-  rotate_90.apply("rotated_90.jpg");
+    std::string welcomeMsg = "\nWelcome to the ultimate image processor CPP app.";
+    std::cout << welcomeMsg << "\n";
+    std::cout << std::string(welcomeMsg.length()/5, ' ') << std::string(welcomeMsg.length()*3/5, '=') << std::string(welcomeMsg.length()/5, ' ') << "\n \n";
 
-  
-  RotateFilter rotate_180(toy1, 180);
-  rotate_180.apply("rotated_180.jpg");
-
-
-  std::string welcomeMsg = "\nWelcome to the ultimate image processor CPP app.";
-  std::cout << welcomeMsg << "\n";
-  std::cout << std::string(welcomeMsg.length()/5, ' ') << std::string(welcomeMsg.length()*3/5, '=') << std::string(welcomeMsg.length()/5, ' ') << "\n \n";
-
-  bool exited = false;
-  bool fileLoaded = false; // default false
+    bool exited = false;
+    bool fileLoaded = false; // default false
+    while (!exited) {
 
 
-  while (!exited) {
-  std::cout << "Select by typing the number of the operation:\n";
+    std::cout << "Select by typing the number of the operation:\n";
 
-  std::cout << "1. Load an image to work on.\n";
-  if (fileLoaded) {
-    std::cout << "Filters\n";
-    std::cout << "\t2. Black and White Filter.\n";
-    std::cout << "\t3. Grey Scale Filter.\n";
-    std::cout << "\t4. Invert Filter.\n";
+    std::cout << "1. Load an image to work on.\n";
+    if (fileLoaded) {
+      std::cout << "Filters\n";
+      std::cout << "\t2. Black and White Filter.\n";
+      std::cout << "\t3. Grey Scale Filter.\n";
+      std::cout << "\t4. Invert Filter.\n";
+    }
+    std::cout << "0. Exit.\n";
+    std::cout << "-------------------------------\n";
+
+
+    int res;
+    std::cout << "Enter Your Response:\t";
+    std::cin >> res;
+    std::cout << '\n';
+
+
+    if (res == 1) {
+        Image img = loadImage();
+        fileLoaded = true;
+    } else {
+        exited = true;
+    }
   }
-  std::cout << "0. Exit.\n";
-  std::cout << "-------------------------------\n";
-
-
-  int res;
-  std::cout << "Enter Your Response:\t";
-  std::cin >> res;
-  std::cout << '\n';
-
-
-  if (res == 1) {
-      // Image img = loadImage();
-      fileLoaded = true;
-  } else {
-      exited = true;
-  }
-}
 
 
   return 0;
 }
+
