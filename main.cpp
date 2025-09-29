@@ -162,16 +162,13 @@ public:
 
             int cx = image.width / 2;
             int cy = image.height / 2;
-
-            int ncx = rotated_image.width / 2;
-            int ncy = rotated_image.height / 2;
-
+          
             for (int x = 0; x < rotated_image.width; x++)
             {
                 for (int y = 0; y < rotated_image.height; y++)
                 {
-                    int X = cx + (x - ncx) * cos_Angle + (y - ncy) * sin_Angle;
-                    int Y = cy - (x - ncx) * sin_Angle + (y - ncy) * cos_Angle;
+                    int X = cx + (x - cx) * cos_Angle + (y - cy) * sin_Angle;
+                    int Y = cy - (x - cx) * sin_Angle + (y - cy) * cos_Angle;
 
                     if (X >= 0 && X < image.width && Y >= 0 && Y < image.height)
                     {
