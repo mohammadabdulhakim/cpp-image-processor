@@ -367,4 +367,85 @@ while (!imageSaved){
 
 }
 
+/*
+    int main() {
+    string welcomeMsg = "\nWelcome to the ultimate image processor CPP app.";
+    cout << welcomeMsg << "\n";
+    cout << std::string(welcomeMsg.length() / 5, ' ') << std::string(welcomeMsg.length() * 3 / 5, '=') << std::string(welcomeMsg.length() / 5, ' ') << "\n \n";
+
+    Image img;
+    bool exited = false;
+    bool fileLoaded = false; // default false
+    while (!exited) {
+        std::cout << "\nSelect by typing the number of the operation:\n";
+
+        cout << "1. Load an image to work on.\n";
+        if (fileLoaded) {
+            cout << "Filters\n";
+            cout << "\t2. Grayscale Conversion Filter.\n";
+            cout << "\t3. Black and White Filter.\n";
+            cout << "\t4. Invert Filter.\n";
+             cout << "\t5.rotate Filter.\n";
+            cout << "\t6. Flipping Filter.\n";
+            cout << "\t9. Crop Filter.\n";
+            cout << "\t-1. Save the Image.\n";
+        }
+        cout << "0. Exit.\n";
+        cout << "-------------------------------\n";
+
+
+        int res;
+        cout << "Enter Your Response:\t";
+        cin >> res;
+        cout << '\n';
+
+        // Add Filters Applications Here ----------------------------------------------
+        if (res == 1) {
+            loadImage(img);
+            fileLoaded = true;
+        }
+        else if (res == 2 && fileLoaded) {
+            GreyFilter grey(img);
+            grey.apply();
+        }
+        else if (res == 3 && fileLoaded) {
+            BWFilter bw(img);
+            bw.apply();
+        }
+        else if (res == 4 && fileLoaded) {
+            InvertFilter Inverted_image(img);
+            Inverted_image.apply();
+        }
+        else if (res == 5 && fileLoaded) {
+            int angle;
+            cout << "Enter rotation angle (90 / 180 / 270): ";
+            cin >> angle;
+            RotateFilter rotaded_image(img , angle);
+            rotaded_image.apply();
+        }
+        else if (res == 6 && fileLoaded) {
+            FlipFilter flipFilter(img);
+            flipFilter.getFlippingDirection();
+            flipFilter.apply();
+        }
+
+        else if (res == 9 && fileLoaded) {
+            Crop crop(img);
+            crop.getCorner();
+            crop.getDimentions();
+            crop.apply();
+        }
+        else if (res == -1 && fileLoaded) {
+            saveImage(img);
+        }
+        else {
+            exited = true;
+        }
+        // -------------------------------------------------------------------
+    }
+
+
+    return 0;
+}
+*/
 
