@@ -238,7 +238,7 @@ int main() {
             cout << "\t2. Grayscale Conversion Filter.\n";
             cout << "\t3. Black and White Filter.\n";
             cout << "\t4. Invert Filter.\n";
-             cout << "\t5.rotate Filter.\n";
+            cout << "\t5.rotate Filter.\n";
             cout << "\t6. Flipping Filter.\n";
             cout << "\t-1. Save the Image.\n";
         }
