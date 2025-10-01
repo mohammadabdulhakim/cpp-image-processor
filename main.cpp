@@ -5,7 +5,6 @@
 #include <stdexcept>
 #include <vector>
 #include<cmath>
-#include <filesystem>
 #define M_PI 3.14159265359
 #define RESET   "\033[0m"
 #define RED     "\033[31m"
@@ -14,8 +13,9 @@
 #define BLUE    "\033[34m"
 #define CYAN    "\033[36m"
 #define BOLD    "\033[1m"
-
 #include "iostream"
+#include <filesystem>
+namespace fs = std::filesystem;
 using namespace std; // This load a lot of files into the project, use  better;
 
 string getImagePath(string imgName) {
@@ -330,7 +330,7 @@ public:
 
 class RotateFilter : public Filter
 {
-    int angle = 90;
+    int angle;
 public:
     RotateFilter(Image& img) : Filter(img) {};
     string getName() { return "Rotate"; };
@@ -341,7 +341,7 @@ public:
         try
         {
             Image rotated_image;
-
+            angle = 360 - angle; 
             switch (angle)
             {
             case 90:
@@ -361,12 +361,15 @@ public:
             int cx = image.width / 2;
             int cy = image.height / 2;
 
+            int ncx = rotated_image.width / 2;
+            int ncy = rotated_image.height / 2;
+
             for (int x = 0; x < rotated_image.width; x++)
             {
                 for (int y = 0; y < rotated_image.height; y++)
                 {
-                    int X = cx + (x - cx) * cos_Angle + (y - cy) * sin_Angle;
-                    int Y = cy - (x - cx) * sin_Angle + (y - cy) * cos_Angle;
+                    int X = cx + (x - ncx) * cos_Angle + (y - ncy) * sin_Angle;
+                    int Y = cy - (x - ncx) * sin_Angle + (y - ncy) * cos_Angle;
 
                     if (X >= 0 && X < image.width && Y >= 0 && Y < image.height)
                     {
@@ -377,6 +380,8 @@ public:
                     }
                 }
             }
+
+            image = rotated_image;
         }
         catch (const std::exception& e)
         {
@@ -384,6 +389,7 @@ public:
             throw;
         }
     }
+
     void getNeeds() override {
         cout << "Enter rotation angle (90 / 180 / 270): ";
         cin >> angle;
@@ -513,13 +519,33 @@ public:
 
     void save()
     {
-        cout << "Enter the name of the new image: ";
+        cout << YELLOW << "Enter the name of the new image : " << RESET;
         string imgName;
         cin >> imgName;
 
-        if (!filesystem::exists("output")) filesystem::create_directory("output");
-        img.saveImage(("output/"+imgName));
-    };
+        string folderPath = "output";
+
+        if (!fs::exists(folderPath))
+        {
+            cout << RED << " The default folder '" << folderPath << "' does not exist.\n" << RESET;
+            cout << CYAN << "Please enter another folder name: " << RESET;
+            cin >> folderPath;
+
+            try {
+                fs::create_directories(folderPath);
+                cout << GREEN << "Folder created successfully: " << folderPath << RESET << endl;
+            }
+            catch (const exception& e) {
+                cerr << RED << "Error creating folder: " << e.what() << RESET << endl;
+                return;
+            }
+        }
+
+        string fullPath = folderPath + "/" + imgName;
+        img.saveImage(fullPath);
+
+        cout << GREEN << "Image saved successfully at: " << RESET << fullPath << endl;
+    }
 
     bool getIsLoaded()
     {
