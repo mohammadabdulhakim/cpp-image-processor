@@ -278,6 +278,38 @@ public:
     }
 };
 
+class CropFiter: public Filter {
+    int corner[2] {0};
+    int dimensions[2] {100};
+
+public:
+    CropFiter(Image &img) :Filter(img) {};
+    void getNeeds () override {
+        cout << "Please enter a point to start cropping from it. (0 0): ";
+        cin >> corner[0] >> corner[1];
+        cout << "Please enter the dimensions of your cropped image. (100 100): ";
+        cin >> dimensions[0] >> dimensions[1];
+    }
+    string getName() {return "Crop";};
+    static int getId() {return 9;};
+
+    void apply() override {
+        Image croppedImage(dimensions[0], dimensions[1]);
+
+        for (int i = corner[0], I = 0; i < (corner[0]+dimensions[0]); i++, I++) {
+            for (int j = corner[1], J = 0; j < (corner[1]+dimensions[1]); j++, J++) {
+                for (int k = 0; k < image.channels; k++) {
+                    croppedImage(I,J,k) = image(i,j,k);
+                }
+            }
+        }
+
+
+        image = croppedImage;
+    }
+};
+
+
 class Menu
 {
     bool isActive = true;
@@ -384,6 +416,7 @@ int main()
         {MergeFilter::getId(),make_shared<MergeFilter>(currentImage.img)},
         {FlipFilter::getId(),make_shared<FlipFilter>(currentImage.img)},
         {RotateFilter::getId(),make_shared<RotateFilter>(currentImage.img)},
+        {CropFiter::getId(),make_shared<CropFiter>(currentImage.img)},
     };
 
     Menu menu(filters);
