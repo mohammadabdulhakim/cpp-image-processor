@@ -341,7 +341,7 @@ public:
         try
         {
             Image rotated_image;
-            angle = 360 - angle; 
+            /*angle = 360 - angle; */
             switch (angle)
             {
             case 90:
@@ -523,17 +523,15 @@ public:
         string imgName;
         cin >> imgName;
 
-        string folderPath = "output";
+        cout << CYAN << "Enter folder name to save image : " << RESET;
+        string folderPath;
+        cin >> folderPath;
 
         if (!fs::exists(folderPath))
         {
-            cout << RED << " The default folder '" << folderPath << "' does not exist.\n" << RESET;
-            cout << CYAN << "Please enter another folder name: " << RESET;
-            cin >> folderPath;
-
             try {
                 fs::create_directories(folderPath);
-                cout << GREEN << "Folder created successfully: " << folderPath << RESET << endl;
+                cout << GREEN << "Folder created successfully: " << RESET << folderPath << endl;
             }
             catch (const exception& e) {
                 cerr << RED << "Error creating folder: " << e.what() << RESET << endl;
@@ -542,9 +540,23 @@ public:
         }
 
         string fullPath = folderPath + "/" + imgName;
-        img.saveImage(fullPath);
 
-        cout << GREEN << "Image saved successfully at: " << RESET << fullPath << endl;
+        try {
+            bool fileExists = fs::exists(fullPath);
+            img.saveImage(fullPath);
+
+            if (fileExists) {
+                cout << GREEN << "Image saved successfully in existing file: "
+                    <<  RESET << fullPath << endl;
+            }
+            else {
+                cout << GREEN << "File created successfully: "
+                     <<  RESET << fullPath << endl;
+            }
+        }
+        catch (const exception& e) {
+            cerr << RED << "Error saving file: " << e.what() << RESET << endl;
+        }
     }
 
     bool getIsLoaded()
