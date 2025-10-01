@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <vector>
 #include<cmath>
+#include <filesystem>
 #define M_PI 3.14159265359
 #define RESET   "\033[0m"
 #define RED     "\033[31m"
@@ -516,6 +517,7 @@ public:
         string imgName;
         cin >> imgName;
 
+        if (!filesystem::exists("output")) filesystem::create_directory("output");
         img.saveImage(("output/"+imgName));
     };
 
