@@ -5,6 +5,7 @@
 #include "Image_Class.h"
 #include <stdexcept>
 #include <vector>
+#define M_PI 3.14159265359
 
 #include "iostream"
 using namespace std; // This load a lot of files into the project, use  better;
@@ -24,6 +25,29 @@ public:
     virtual void apply() = 0;
     virtual void getNeeds() = 0;
     virtual string getName() = 0;
+    static void resizeImage(Image &img, int newW, int newH)
+    {
+        Image out(newW, newH);
+
+        double xRatio = static_cast<double>(img.width) / newW;
+        double yRatio = static_cast<double>(img.height) / newH;
+
+        for (int y = 0; y < newH; ++y)
+        {
+            for (int x = 0; x < newW; ++x)
+            {
+                int nearestX = static_cast<int>(x * xRatio);
+                int nearestY = static_cast<int>(y * yRatio);
+
+                for (int c = 0; c < 3; ++c)
+                {
+                    out(x, y, c) = img(nearestX, nearestY, c);
+                }
+            }
+        }
+
+        img = out;
+    }
     // static string getId() {};
 };
 
@@ -99,6 +123,7 @@ public:
 class MergeFilter : public Filter
 {
     Image overlay;
+    int mergeType = 1;
 
 public:
     MergeFilter(Image &img) : Filter(img) {};
@@ -110,22 +135,101 @@ public:
         string imgName;
         cin >> imgName;
 
+        cout << "Enter Merge type (1: Stretch to fit, 2: Common): ";
+        cin >> mergeType;
+        
         overlay.loadNewImage(getImagePath(imgName));
     };
     void apply() override
     {
-        int minHeight = min(image.height, overlay.height);
-        int minWidth = min(image.width, overlay.width);
-
-        for (int i = 0; i < minWidth; i++)
+        Image &base = image;
+        Image &overlay = overlay;
+        try
         {
-            for (int j = 0; j < minHeight; j++)
+            int height;
+            int width;
+
+            if (base.width == overlay.width && base.height == overlay.height)
             {
-                for (int k = 0; k < 3; k++)
+                height = base.height;
+                width = base.width;
+                for (int i = 0; i < width; i++)
                 {
-                    image(i, j, k) = (image(i, j, k) + overlay(i, j, k)) / 2;
+                    for (int j = 0; j < height; j++)
+                    {
+                        for (int k = 0; k < 3; k++)
+                        {
+                            base(i, j, k) = (base(i, j, k) + overlay(i, j, k)) / 2;
+                        }
+                    }
                 }
             }
+            else
+            {
+                switch (mergeType)
+                {
+                case 1:
+                { // max
+                    /* Max */
+                    width = std::max(base.width, overlay.width);
+                    height = std::max(base.height, overlay.height);
+                    resizeImage(base, width, height);
+                    resizeImage(overlay, width, height);
+                    for (int i = 0; i < width; i++)
+                    {
+                        for (int j = 0; j < height; j++)
+                        {
+                            for (int k = 0; k < 3; k++)
+                            {
+                                base(i, j, k) = (base(i, j, k) + overlay(i, j, k)) / 2;
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 2:
+                { // both
+                    Image img(std::max(base.width, overlay.width),
+                              std::max(base.height, overlay.height));
+                    for (int i = 0; i < base.width; i++)
+                    {
+                        for (int j = 0; j < base.height; j++)
+                        {
+                            for (int k = 0; k < 3; k++)
+                            {
+                                img(i, j, k) = base(i, j, k);
+                            }
+                        }
+                    }
+                    for (int i = 0; i < overlay.width; i++)
+                    {
+                        for (int j = 0; j < overlay.height; j++)
+                        {
+                            for (int k = 0; k < 3; k++)
+                            {
+                                if (i < base.width && j < base.height)
+                                {
+                                    img(i, j, k) = (img(i, j, k) + overlay(i, j, k)) / 2;
+                                }
+                                else
+                                {
+                                    img(i, j, k) = overlay(i, j, k);
+                                }
+                            }
+                        }
+                    }
+
+                    base = img;
+                }
+                default:
+                    break;
+                }
+            }
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "Error: " << e.what() << std::endl;
+            throw;
         }
     }
 };
@@ -309,7 +413,6 @@ public:
     }
 };
 
-
 class Menu
 {
     bool isActive = true;
@@ -420,7 +523,6 @@ int main()
     };
 
     Menu menu(filters);
-
 
     menu.welcomeMsg();
     while (menu.getIsActive())
