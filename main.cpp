@@ -13,14 +13,15 @@
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
-
+#include <filesystem>
+namespace fs = std::filesystem;
 class Filter {
 protected:
     std::string outputFolderPath = "../../output/";
 public:
     Filter() {}
 
-    virtual void apply(std::vector<std::shared_ptr<Image>> images, std::unordered_map<std::string, int>&  opt) = 0;
+    virtual void apply(std::vector<std::shared_ptr<Image>> images, std::unordered_map<std::string, int>& opt) = 0;
     virtual std::string getName() const = 0;
     virtual int getNumberOfImages() const = 0;
     virtual std::vector<std::string> getRequirements() const = 0;
@@ -67,37 +68,37 @@ public:
 
 class BwFilter : public Filter {
 public:
-  void apply(std::vector<std::shared_ptr<Image>> images, std::unordered_map<std::string, int>&   opt) override {
+    void apply(std::vector<std::shared_ptr<Image>> images, std::unordered_map<std::string, int>& opt) override {
 
-	  Image& image = *images[0];
-     try {
-        for (int i = 0; i < image.width; i++) {
-            for (int j = 0; j < image.height; j++) {
+        Image& image = *images[0];
+        try {
+            for (int i = 0; i < image.width; i++) {
+                for (int j = 0; j < image.height; j++) {
 
-                unsigned int avg = 0;
-                bool bw = false;
+                    unsigned int avg = 0;
+                    bool bw = false;
 
-                for (int k = 0; k < 3; k++) {
-                    avg += image(i, j, k);
-                }
+                    for (int k = 0; k < 3; k++) {
+                        avg += image(i, j, k);
+                    }
 
-                avg /= image.channels;
-                avg >= 128 ? bw = true : bw = false;
-                for (int k = 0; k < image.channels; k++) {
-                    image(i, j, k) = bw ? 255 : 0;
+                    avg /= image.channels;
+                    avg >= 128 ? bw = true : bw = false;
+                    for (int k = 0; k < image.channels; k++) {
+                        image(i, j, k) = bw ? 255 : 0;
+                    }
                 }
             }
-        }
 
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+            throw;
+        }
     }
-    catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        throw;
+    std::string getName() const override {
+        return "Black and white";
     }
-  }
-  std::string getName() const override {
-    return "Black and white";
-  }
 
     int getNumberOfImages() const override {
         return 1;
@@ -111,25 +112,25 @@ public:
 
 class InvertFilter : public Filter {
 public:
-  void apply(std::vector<std::shared_ptr<Image>> images, std::unordered_map<std::string, int>&   opt) override {
-      Image& image = *images[0];
-    try {
-      for (int i = 0; i < image.width; i++) {
-          for (int j = 0; j < image.height; j++) {
-              for (int k = 0; k < 3; k++) {
-                  image(i, j, k) = 255 - image(i, j, k);
-              }
-          }
-      }
+    void apply(std::vector<std::shared_ptr<Image>> images, std::unordered_map<std::string, int>& opt) override {
+        Image& image = *images[0];
+        try {
+            for (int i = 0; i < image.width; i++) {
+                for (int j = 0; j < image.height; j++) {
+                    for (int k = 0; k < 3; k++) {
+                        image(i, j, k) = 255 - image(i, j, k);
+                    }
+                }
+            }
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+            throw;
+        }
     }
-    catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        throw;
-    }
-  }
     std::string getName() const override {
-    return "Invert";
-  }
+        return "Invert";
+    }
 
     int getNumberOfImages() const override {
         return 1;
@@ -144,31 +145,31 @@ public:
 class MergeFilter : public Filter {
 
 public:
-   void apply(std::vector<std::shared_ptr<Image>> images, std::unordered_map<std::string, int>&   opt) override {
-      Image& base = *images[0];
-      Image& overlay = *images[1];
-    try {
-      int minHeight = std::min(base.height, overlay.height);
-      int minWidth  = std::min(base.width, overlay.width);
+    void apply(std::vector<std::shared_ptr<Image>> images, std::unordered_map<std::string, int>& opt) override {
+        Image& base = *images[0];
+        Image& overlay = *images[1];
+        try {
+            int minHeight = std::min(base.height, overlay.height);
+            int minWidth = std::min(base.width, overlay.width);
 
-      for (int i = 0; i < minWidth; i++) {
-          for (int j = 0; j < minHeight; j++) {
-              for (int k = 0; k < 3; k++) {
-                  base(i, j, k) = (base(i, j, k) + overlay(i, j, k)) / 2;
-              }
-          }
-      }
+            for (int i = 0; i < minWidth; i++) {
+                for (int j = 0; j < minHeight; j++) {
+                    for (int k = 0; k < 3; k++) {
+                        base(i, j, k) = (base(i, j, k) + overlay(i, j, k)) / 2;
+                    }
+                }
+            }
 
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+            throw;
+        }
     }
-    catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        throw;
-    }
-  }
 
-std::string getName() const override {
-    return "Merge Images";
-  }
+    std::string getName() const override {
+        return "Merge Images";
+    }
 
     int getNumberOfImages() const override {
         return 2;
@@ -181,75 +182,75 @@ std::string getName() const override {
 
 class RotateFilter : public Filter {
 public:
- 
-  void apply(std::vector<std::shared_ptr<Image>> images, std::unordered_map<std::string, int>& opt) override {
-      Image& image = *images[0];
-      int angle = opt["angle"];
-    try {
-    Image rotated_image;
 
-    switch (angle)
-    {
-    case 90:
-    case 270:
-        rotated_image = Image(image.height, image.width);
-        break;
+    void apply(std::vector<std::shared_ptr<Image>> images, std::unordered_map<std::string, int>& opt) override {
+        Image& image = *images[0];
+        int angle = opt["angle"];
+        try {
+            Image rotated_image;
 
-    case 180:
-        rotated_image = Image(image.width, image.height);
-        break;
-    }
-
-   
-    double radian = angle * M_PI / 180.0;
-    double cos_Angle = cos(radian);
-    double sin_Angle = sin(radian);
-
-    int cx = image.width / 2;
-    int cy = image.height / 2;
-
-    int ncx = rotated_image.width / 2;
-    int ncy = rotated_image.height / 2;
-
-    for (int x = 0; x < rotated_image.width; x++)
-    {
-        for (int y = 0; y < rotated_image.height; y++)
-        {
-            int X = cx + (x - ncx) * cos_Angle + (y - ncy) * sin_Angle;
-            int Y = cy - (x - ncx) * sin_Angle + (y - ncy) * cos_Angle;
-
-            if (X >= 0 && X < image.width && Y >= 0 && Y < image.height)
+            switch (angle)
             {
-                for (int k = 0; k < 3; k++)
+            case 90:
+            case 270:
+                rotated_image = Image(image.height, image.width);
+                break;
+
+            case 180:
+                rotated_image = Image(image.width, image.height);
+                break;
+            }
+
+
+            double radian = angle * M_PI / 180.0;
+            double cos_Angle = cos(radian);
+            double sin_Angle = sin(radian);
+
+            int cx = image.width / 2;
+            int cy = image.height / 2;
+
+            int ncx = rotated_image.width / 2;
+            int ncy = rotated_image.height / 2;
+
+            for (int x = 0; x < rotated_image.width; x++)
+            {
+                for (int y = 0; y < rotated_image.height; y++)
                 {
-                    rotated_image(x, y, k) = image(X, Y, k);
+                    int X = cx + (x - ncx) * cos_Angle - (y - ncy) * sin_Angle;
+                    int Y = cy +(x - ncx) * sin_Angle + (y - ncy) * cos_Angle;
+
+                    if (X >= 0 && X < image.width && Y >= 0 && Y < image.height)
+                    {
+                        for (int k = 0; k < 3; k++)
+                        {
+                            rotated_image(x, y, k) = image(X, Y, k);
+                        }
+                    }
                 }
             }
+            image = rotated_image;
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+            throw;
         }
     }
-    image = rotated_image;
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        throw;
-    }
-  }
 
     std::string getName() const override {
-    return "Rotate";
-  }
+        return "Rotate";
+    }
 
     int getNumberOfImages() const override {
         return 1;
     }
 
     std::vector<std::string> getRequirements() const override {
-        return {"angle"};
+        return { "angle" };
     }
 };
 
 
-void loadImage (std::string& path, int imageNumber, std::vector<std::shared_ptr<Image>>& images) {
+void loadImage(std::string& path, int imageNumber, std::vector<std::shared_ptr<Image>>& images) {
     path = "assets/" + path;
     Image img(path);
     images[imageNumber - 1] = std::make_shared<Image>(img);
@@ -267,7 +268,7 @@ int main() {
 
 
 
-  
+
     std::unordered_map<std::string, int> opt;
 
     //options default values
@@ -278,92 +279,109 @@ int main() {
 
     std::cout << CYAN << "====================\n";
     std::cout << RESET << BOLD << "    Image Filters    \n";
-    std::cout << RESET << CYAN<< "=====================\n";
+    std::cout << RESET << CYAN << "=====================\n";
 
     std::cout << RESET << GREEN << "1] Load Image\n";
     std::cout << RESET << CYAN << "2] Exit\n" << RESET;
     int loadExitChoice;
     std::cin >> loadExitChoice;
 
-    if(loadExitChoice != 1) {
+    if (loadExitChoice != 1) {
         exit = true;
-    } else {
+    }
+    else {
         std::string imageName;
-        std::cout << CYAN << "Please Enter image name you want to apply filter on: "; 
+        std::cout << CYAN << "Please Enter image name you want to apply filter on: ";
         std::cout << RESET << GREEN << BOLD;
-        std::cin >> imageName;   
+        std::cin >> imageName;
         std::cout << RESET;
-        Image img("assets/"+ imageName);
+        Image img("assets/" + imageName);
         images[0] = std::make_shared<Image>(img);
     }
 
-    
 
 
-    while(!exit) {
+
+    while (!exit) {
         std::cout << "\n\n";
 
         std::cout << CYAN << "=====================\n";
         std::cout << RESET << BOLD << "    Choose Filters    \n";
-        std::cout << RESET << CYAN<< "======================\n" << RESET;
+        std::cout << RESET << CYAN << "======================\n" << RESET;
 
-        for(int i =0; i< 5; i++) {
-            std::cout << i+1 << "] " << filters[i]-> getName() << "\n";
+        for (int i = 0; i < 5; i++) {
+            std::cout << i + 1 << "] " << filters[i]->getName() << "\n";
         }
         std::cout << "Exit (any key)" << "\n";
 
         std::cout << BOLD << GREEN << "# " << RESET;
         int choice;
-    if (!(std::cin >> choice)) {
-        exit = true;
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        break;
-    }
+        if (!(std::cin >> choice)) {
+            exit = true;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            break;
+        }
 
-        if(filters[choice-1]->getNumberOfImages() > 1){
+        if (filters[choice - 1]->getNumberOfImages() > 1) {
             int temp = 1;
-            int x = filters[choice-1]->getNumberOfImages();
+            int x = filters[choice - 1]->getNumberOfImages();
             std::string path;
-            std::cout << CYAN << "This filter require " << x << " images:\n" << RESET; 
-            while(temp < x) {
-                std::cout << CYAN << "Enter Image[ " << temp+1 <<" ] name with extention: ";
+            std::cout << CYAN << "This filter require " << x << " images:\n" << RESET;
+            while (temp < x) {
+                std::cout << CYAN << "Enter Image[ " << temp + 1 << " ] name with extention: ";
                 std::cout << RESET << GREEN << BOLD;
                 std::cin >> path;
                 std::cout << RESET;
                 loadImage(path, x, images);
 
                 std::cout << '\n';
-                temp++;            
+                temp++;
             }
         }
 
-        std::vector<std::string> requirements = filters[choice-1]->getRequirements();
-        for(int i =0; i < requirements.size(); i++) {
-            std::cout << CYAN << "#Enter " << requirements[i]<< ": ";
+        std::vector<std::string> requirements = filters[choice - 1]->getRequirements();
+        for (int i = 0; i < requirements.size(); i++) {
+            std::cout << CYAN << "#Enter " << requirements[i] << ": ";
             std::cout << RESET << GREEN << BOLD;
             std::cin >> opt[requirements[i]];
             std::cout << RESET;
             std::cout << '\n';
         }
 
-        filters[choice-1]->apply(images, opt);
+        filters[choice - 1]->apply(images, opt);
 
 
     }
 
+    std::string outputFileName, folderName;
+    bool imageSaved = false;
 
-std::string outputFileName = "";
-bool imageSaved = false;
-while (!imageSaved){
-    std::cout << RESET << CYAN << "# Enter output file name with extention: " << GREEN << BOLD; std :: cin >> outputFileName;
-    try{
-        images[0]->saveImage("../../output/" + outputFileName);
-        imageSaved = true;
-    } catch (const std::invalid_argument& e){
-        std::cout << RED << BOLD << "Invalid file name\n";
+    std::cout << CYAN << "# Enter folder name to save images: " << GREEN << BOLD;
+    std::cin >> folderName;
+    std::cout << RESET;
+
+    if (!fs::exists(folderName)) {
+        fs::create_directory(folderName);
+        std::cout << YELLOW << "Folder created: " << folderName << RESET << std::endl;
     }
-}
+
+    while (!imageSaved) {
+        std::cout << CYAN << "# Enter output file name with extension : "
+            << GREEN << BOLD;
+        std::cin >> outputFileName;
+        std::cout << RESET;
+
+        try {
+            images[0]->saveImage(folderName + "/" + outputFileName);
+            imageSaved = true;
+            std::cout << GREEN << "Image saved at: " << folderName + "/" + outputFileName << RESET << std::endl;
+        }
+        catch (const std::invalid_argument& e) {
+            std::cout << RED << BOLD << "Invalid file name\n";
+        }
+    }
+
 
 }
 
@@ -448,4 +466,3 @@ while (!imageSaved){
     return 0;
 }
 */
-
