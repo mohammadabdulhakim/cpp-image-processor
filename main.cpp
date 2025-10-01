@@ -516,7 +516,7 @@ public:
         string imgName;
         cin >> imgName;
 
-        img.saveImage(("C:\\Users\\Mohammad\\CLionProjects\\cpp-img-processor\\output\\" + imgName + ".jpg"));
+        img.saveImage(("output/"+imgName));
     };
 
     bool getIsLoaded()
