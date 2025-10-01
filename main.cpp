@@ -5,7 +5,15 @@
 #include "Image_Class.h"
 #include <stdexcept>
 #include <vector>
+
 #define M_PI 3.14159265359
+#define RESET   "\033[0m"
+#define RED     "\033[31m"
+#define GREEN   "\033[32m"
+#define YELLOW  "\033[33m"
+#define BLUE    "\033[34m"
+#define CYAN    "\033[36m"
+#define BOLD    "\033[1m"
 
 #include "iostream"
 using namespace std; // This load a lot of files into the project, use  better;
@@ -424,28 +432,38 @@ public:
 
     void welcomeMsg()
     {
-        string welcomeMsg = "\nWelcome to the ultimate image processor CPP app.";
-        cout << welcomeMsg << "\n";
-        cout << string(welcomeMsg.length() / 5, ' ') << string(welcomeMsg.length() * 3 / 5, '=') << string(welcomeMsg.length() / 5, ' ') << "\n \n";
+        // string welcomeMsg = "\nWelcome to the ultimate image processor CPP app.";
+        // cout << welcomeMsg << "\n";
+        // cout << string(welcomeMsg.length() / 5, ' ') << string(welcomeMsg.length() * 3 / 5, '=') << string(welcomeMsg.length() / 5, ' ') << "\n \n";
+        std::cout << CYAN << "====================\n";
+        std::cout << RESET << BOLD << "    Image Filters    \n";
+        std::cout << RESET << CYAN << "=====================\n";
     }
 
     void showMenuOptions(bool fileLoaded)
     {
-        cout << "\nSelect by typing the number of the operation:\n";
+        // cout << "\nSelect by typing the number of the operation:\n";
 
-        cout << "1. Load an image to work on.\n";
+        // cout << "1. Load an image to work on.\n";
+        std::cout << RESET << GREEN << "1] Load Image\n";
         if (fileLoaded)
         {
-            cout << "Filters\n";
+            // cout << "Filters\n";
+            std::cout << "\n\n";
+            std::cout << CYAN << "=====================\n";
+            std::cout << RESET << BOLD << "    Choose Filters    \n";
+            std::cout << RESET << CYAN << "======================\n" << RESET;
+
             auto it = filters.begin();
             while (it != filters.end()) {
-                cout << '\t' << it->first <<". "<< it->second->getName() <<" Filter.\n";
+                cout << '\t' << it->first <<"] "<< it->second->getName() <<" Filter.\n";
                 ++it;
             }
 
-            cout << "\t-1. Save the Image.\n";
+            cout << "\t-1] Save the Image.\n";
         }
-        cout << "0. Exit.\n";
+        // cout << "0. Exit.\n";
+        std::cout << RESET << CYAN << "0] Exit\n" << RESET;
         cout << "-------------------------------\n";
     }
 
@@ -460,7 +478,8 @@ public:
 
     void setResponse()
     {
-        cout << "Enter Your Response:\t";
+        // cout << "Enter Your Response:\t";
+        std::cout << BOLD << GREEN << "# " << RESET;
         cin >> res;
         cout << '\n';
     }
@@ -479,9 +498,13 @@ public:
     Image img;
     void load()
     {
-        cout << "Enter the image's name: ";
         string imgName;
-        cin >> imgName;
+        // cout << "Enter the image's name: ";
+        // cin >> imgName;
+        std::cout << CYAN << "Please Enter image name you want to apply filter on: ";
+        std::cout << RESET << GREEN << BOLD;
+        std::cin >> imgName;
+        std::cout << RESET;
 
         img.loadNewImage(getImagePath(imgName));
         setIsLoaded(true);
