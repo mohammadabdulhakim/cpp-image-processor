@@ -25,7 +25,26 @@ public:
     virtual std::string getName() const = 0;
     virtual int getNumberOfImages() const = 0;
     virtual std::vector<std::string> getRequirements() const = 0;
+    
+    static void resizeImage(Image& img, int newW, int newH) {
+    Image out(newW, newH);
 
+    double xRatio = static_cast<double>(img.width) / newW;
+    double yRatio = static_cast<double>(img.height) / newH;
+
+    for (int y = 0; y < newH; ++y) {
+        for (int x = 0; x < newW; ++x) {
+            int nearestX = static_cast<int>(x * xRatio);
+            int nearestY = static_cast<int>(y * yRatio);
+
+            for (int c = 0; c < 3; ++c) {
+                out(x, y, c) = img(nearestX, nearestY, c);
+            }
+        }
+    }
+
+    img = out;
+}
     virtual ~Filter() {}
 };
 
@@ -145,15 +164,34 @@ public:
 class MergeFilter : public Filter {
 
 public:
-    void apply(std::vector<std::shared_ptr<Image>> images, std::unordered_map<std::string, int>& opt) override {
+        void apply(std::vector<std::shared_ptr<Image>> images, std::unordered_map<std::string, int>& opt) override {
         Image& base = *images[0];
         Image& overlay = *images[1];
         try {
-            int minHeight = std::min(base.height, overlay.height);
-            int minWidth = std::min(base.width, overlay.width);
+            int height;
+            int width;
 
-            for (int i = 0; i < minWidth; i++) {
-                for (int j = 0; j < minHeight; j++) {
+            if(base.width == overlay.width && base.height == overlay.height){
+                height = base.height;
+                width = base.width;
+            } else {
+                switch (opt["mergeType"])
+                {
+                case 1:
+                    /* Max */
+                    width = std::max(base.width, overlay.width);
+                    height = std::max(base.height, overlay.height);
+                    resizeImage(base, width, height);
+                    resizeImage(overlay, width, height);
+                    break;
+                case 2:
+                    // common
+                default:
+                    break;
+                }
+            }
+            for (int i = 0; i < width; i++) {
+                for (int j = 0; j < height; j++) {
                     for (int k = 0; k < 3; k++) {
                         base(i, j, k) = (base(i, j, k) + overlay(i, j, k)) / 2;
                     }
@@ -176,7 +214,7 @@ public:
     }
 
     std::vector<std::string> getRequirements() const override {
-        return {};
+        return {"mergeType"};
     }
 };
 
@@ -273,7 +311,7 @@ int main() {
 
     //options default values
     opt["angle"] = 180;
-
+    opt["mergeType"] = 1;
 
     bool exit = false;
 
@@ -360,6 +398,8 @@ int main() {
     std::cout << CYAN << "# Enter folder name to save images: " << GREEN << BOLD;
     std::cin >> folderName;
     std::cout << RESET;
+
+    folderName = "../../" + folderName;
 
     if (!fs::exists(folderName)) {
         fs::create_directory(folderName);
