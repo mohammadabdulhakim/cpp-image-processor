@@ -1,11 +1,10 @@
 #include <complex>
 #include <map>
 #include <memory>
-
 #include "Image_Class.h"
 #include <stdexcept>
 #include <vector>
-
+#include<cmath>
 #define M_PI 3.14159265359
 #define RESET   "\033[0m"
 #define RED     "\033[31m"
@@ -25,15 +24,15 @@ string getImagePath(string imgName) {
 class Filter
 {
 protected:
-    Image &image;
+    Image& image;
     // static string id;
     //   string outputFolderPath = "../../output/";
 public:
-    Filter(Image &img) : image(img) {};
+    Filter(Image& img) : image(img) {};
     virtual void apply() = 0;
     virtual void getNeeds() = 0;
     virtual string getName() = 0;
-    static void resizeImage(Image &img, int newW, int newH)
+    static void resizeImage(Image& img, int newW, int newH)
     {
         Image out(newW, newH);
 
@@ -62,9 +61,9 @@ public:
 class GreyFilter : public Filter
 {
 public:
-    GreyFilter(Image &img) : Filter(img) {};
-    string getName() {return "Grey Scale";};
-    static int getId() {return 2;};
+    GreyFilter(Image& img) : Filter(img) {};
+    string getName() { return "Grey Scale"; };
+    static int getId() { return 2; };
     void apply() override
     {
         try
@@ -89,21 +88,21 @@ public:
                 }
             }
         }
-        catch (const exception &e)
+        catch (const exception& e)
         {
             cerr << "Error: " << e.what() << endl;
             throw;
         }
     }
-    void getNeeds() override{};
+    void getNeeds() override {};
 };
 
 class WBFilter : public Filter
 {
 public:
-    WBFilter(Image &img) : Filter(img) {};
-    string getName() {return "White and Black";};
-    static int getId() {return 3;};
+    WBFilter(Image& img) : Filter(img) {};
+    string getName() { return "White and Black"; };
+    static int getId() { return 3; };
     void apply() override
     {
         for (int i = 0; i < image.width; i++)
@@ -125,7 +124,7 @@ public:
             }
         }
     };
-    void getNeeds() override{};
+    void getNeeds() override {};
 };
 
 class MergeFilter : public Filter
@@ -134,9 +133,9 @@ class MergeFilter : public Filter
     int mergeType = 1;
 
 public:
-    MergeFilter(Image &img) : Filter(img) {};
-    string getName() {return "Merge";};
-    static int getId() {return 5;};
+    MergeFilter(Image& img) : Filter(img) {};
+    string getName() { return "Merge"; };
+    static int getId() { return 5; };
 
     void getNeeds() override {
         cout << "Enter the image's name: ";
@@ -145,13 +144,13 @@ public:
 
         cout << "Enter Merge type (1: Stretch to fit, 2: Common): ";
         cin >> mergeType;
-        
+
         overlay.loadNewImage(getImagePath(imgName));
     };
     void apply() override
     {
-        Image &base = image;
-        Image &overlay = overlay;
+        Image& ov = this->overlay;
+        Image& base = image;
         try
         {
             int height;
@@ -198,7 +197,7 @@ public:
                 case 2:
                 { // both
                     Image img(std::max(base.width, overlay.width),
-                              std::max(base.height, overlay.height));
+                        std::max(base.height, overlay.height));
                     for (int i = 0; i < base.width; i++)
                     {
                         for (int j = 0; j < base.height; j++)
@@ -234,7 +233,7 @@ public:
                 }
             }
         }
-        catch (const std::exception &e)
+        catch (const std::exception& e)
         {
             std::cerr << "Error: " << e.what() << std::endl;
             throw;
@@ -246,16 +245,16 @@ class FlipFilter : public Filter
 {
     char dir = 'h';
 public:
-    FlipFilter(Image &img) : Filter(img) {};
-    string getName() {return "Flip";};
-    static int getId() {return 6;};
+    FlipFilter(Image& img) : Filter(img) {};
+    string getName() { return "Flip"; };
+    static int getId() { return 6; };
 
-    void getNeeds () override
+    void getNeeds() override
     {
         cout << "Do you want to flip the image (v)ertically or (h)orizontally: ";
         cin >> dir;
     }
-    void apply () override
+    void apply() override
     {
         if (dir == 'h')
         {
@@ -263,7 +262,7 @@ public:
             {
                 for (int j = 0; j < image.width / 2; j++)
                 {
-                    int tempChannels[3] = {0};
+                    int tempChannels[3] = { 0 };
                     for (int k = 0; k < image.channels; k++)
                     {
                         tempChannels[k] = image(j, i, k);
@@ -287,7 +286,7 @@ public:
             {
                 for (int i = 0; i < image.height / 2; i++)
                 {
-                    int tempChannels[3] = {0};
+                    int tempChannels[3] = { 0 };
                     for (int k = 0; k < image.channels; k++)
                     {
                         tempChannels[k] = image(j, i, k);
@@ -311,18 +310,18 @@ public:
 
 class InvertFilter : public Filter {
 public:
-    InvertFilter(Image &img): Filter(img){};
+    InvertFilter(Image& img) : Filter(img) {};
     void apply() override {
-            for (int i = 0; i < image.width; i++) {
-                for (int j = 0; j < image.height; j++) {
-                    for (int k = 0; k < 3; k++) {
-                        image(i, j, k) = 255 - image(i, j, k);
-                    }
+        for (int i = 0; i < image.width; i++) {
+            for (int j = 0; j < image.height; j++) {
+                for (int k = 0; k < 3; k++) {
+                    image(i, j, k) = 255 - image(i, j, k);
                 }
             }
+        }
     }
-    string getName() {return "Invert";};
-    static int getId() {return 4;};
+    string getName() { return "Invert"; };
+    static int getId() { return 4; };
 
     void getNeeds() override {};
 
@@ -332,9 +331,9 @@ class RotateFilter : public Filter
 {
     int angle = 90;
 public:
-    RotateFilter(Image &img) : Filter(img){};
-    string getName() {return "Rotate";};
-    static int getId() {return 7;};
+    RotateFilter(Image& img) : Filter(img) {};
+    string getName() { return "Rotate"; };
+    static int getId() { return 7; };
 
     void apply() override
     {
@@ -378,7 +377,7 @@ public:
                 }
             }
         }
-        catch (const std::exception &e)
+        catch (const std::exception& e)
         {
             std::cerr << "Error: " << e.what() << std::endl;
             throw;
@@ -390,28 +389,28 @@ public:
     }
 };
 
-class CropFiter: public Filter {
-    int corner[2] {0};
-    int dimensions[2] {100};
+class CropFiter : public Filter {
+    int corner[2]{ 0 };
+    int dimensions[2]{ 100 };
 
 public:
-    CropFiter(Image &img) :Filter(img) {};
-    void getNeeds () override {
+    CropFiter(Image& img) :Filter(img) {};
+    void getNeeds() override {
         cout << "Please enter a point to start cropping from it. (0 0): ";
         cin >> corner[0] >> corner[1];
         cout << "Please enter the dimensions of your cropped image. (100 100): ";
         cin >> dimensions[0] >> dimensions[1];
     }
-    string getName() {return "Crop";};
-    static int getId() {return 9;};
+    string getName() { return "Crop"; };
+    static int getId() { return 9; };
 
     void apply() override {
         Image croppedImage(dimensions[0], dimensions[1]);
 
-        for (int i = corner[0], I = 0; i < (corner[0]+dimensions[0]); i++, I++) {
-            for (int j = corner[1], J = 0; j < (corner[1]+dimensions[1]); j++, J++) {
+        for (int i = corner[0], I = 0; i < (corner[0] + dimensions[0]); i++, I++) {
+            for (int j = corner[1], J = 0; j < (corner[1] + dimensions[1]); j++, J++) {
                 for (int k = 0; k < image.channels; k++) {
-                    croppedImage(I,J,k) = image(i,j,k);
+                    croppedImage(I, J, k) = image(i, j, k);
                 }
             }
         }
@@ -425,10 +424,10 @@ class Menu
 {
     bool isActive = true;
     int res;
-    map<int,shared_ptr<Filter>> &filters;
+    map<int, shared_ptr<Filter>>& filters;
 
 public:
-    Menu(map<int,shared_ptr<Filter>> &filters): filters(filters) {};
+    Menu(map<int, shared_ptr<Filter>>& filters) : filters(filters) {};
 
     void welcomeMsg()
     {
@@ -456,7 +455,7 @@ public:
 
             auto it = filters.begin();
             while (it != filters.end()) {
-                cout << '\t' << it->first <<"] "<< it->second->getName() <<" Filter.\n";
+                cout << '\t' << it->first << "] " << it->second->getName() << " Filter.\n";
                 ++it;
             }
 
@@ -535,7 +534,7 @@ int main()
 {
     CurrentImage currentImage;
 
-    map<int,shared_ptr<Filter>> filters = {
+    map<int, shared_ptr<Filter>> filters = {
         {GreyFilter::getId(),make_shared<GreyFilter>(currentImage.img)},
         {WBFilter::getId(),make_shared<WBFilter>(currentImage.img)},
         {InvertFilter::getId(),make_shared<InvertFilter>(currentImage.img)},
