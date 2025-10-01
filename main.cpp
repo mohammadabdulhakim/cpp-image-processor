@@ -122,7 +122,7 @@ public:
 
 class MergeFilter : public Filter
 {
-    Image overlay;
+    Image mOverlay;
     int mergeType = 1;
 
 public:
@@ -138,12 +138,12 @@ public:
         cout << "Enter Merge type (1: Stretch to fit, 2: Common): ";
         cin >> mergeType;
         
-        overlay.loadNewImage(getImagePath(imgName));
+        mOverlay.loadNewImage(getImagePath(imgName));
     };
     void apply() override
     {
         Image &base = image;
-        Image &overlay = overlay;
+        Image &overlay = mOverlay;
         try
         {
             int height;
@@ -494,7 +494,7 @@ public:
         string imgName;
         cin >> imgName;
 
-        img.saveImage(("C:\\Users\\Mohammad\\CLionProjects\\cpp-img-processor\\output\\" + imgName + ".jpg"));
+        img.saveImage(("../../output/" + imgName));
     };
 
     bool getIsLoaded()
