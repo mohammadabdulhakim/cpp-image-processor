@@ -13,9 +13,9 @@
     20242295 - Mohammad Abdulhakim Ramadan - Filters(White and Black, Flip, Crop)
     20240588 - Mostafa Ahmed Ali - Filters(Invert, Rotate)
 */
-
 #include <complex>
 #include <map>
+#include<stack>
 #include <memory>
 #include "Image_Class.h"
 #include <stdexcept>
@@ -43,7 +43,7 @@ class Filter
 protected:
     Image& image;
     // static string id;
-    //   string outputFolderPath = "../../output/";
+    // string outputFolderPath = "../../output/";
 public:
     Filter(Image& img) : image(img) {};
     virtual void apply() = 0;
@@ -146,7 +146,7 @@ public:
 
 class MergeFilter : public Filter
 {
-    Image mOverlay;
+    Image overlay;
     int mergeType = 1;
 
 public:
@@ -161,13 +161,13 @@ public:
 
         cout << "Enter Merge type (1: Stretch to fit, 2: Common): ";
         cin >> mergeType;
-        
-        mOverlay.loadNewImage(getImagePath(imgName));
+
+        overlay.loadNewImage(getImagePath(imgName));
     };
     void apply() override
     {
-        Image &base = image;
-        Image &overlay = mOverlay;
+        Image& ov = this->overlay;
+        Image& base = image;
         try
         {
             int height;
@@ -483,6 +483,7 @@ public:
             }
 
             cout << "\t-1] Save the Image.\n";
+            cout << "\t-2] Undo the Image.\n";
         }
         // cout << "0. Exit.\n";
         std::cout << RESET << CYAN << "0] Exit\n" << RESET;
@@ -515,11 +516,16 @@ public:
 class CurrentImage
 {
     bool isLoaded = false; // default false
+    stack<Image> memory;
 
 public:
     Image img;
-    void load()
+    void currennt_img()
     {
+        memory.push(img);
+    }
+    void load()
+    {   
         string imgName;
         // cout << "Enter the image's name: ";
         // cin >> imgName;
@@ -530,6 +536,8 @@ public:
 
         img.loadNewImage(getImagePath(imgName));
         setIsLoaded(true);
+        memory = stack<Image>(); 
+        memory.push(img);
     };
 
 
@@ -554,7 +562,7 @@ public:
                 return;
             }
         }
-
+        
         string fullPath = folderPath + "/" + imgName;
 
         try {
@@ -574,7 +582,18 @@ public:
             cerr << RED << "Error saving file: " << e.what() << RESET << endl;
         }
     }
-
+    void undo()
+    {
+        if (memory.size() > 1)
+        {
+            memory.pop();
+            img = memory.top();
+        }
+        else
+        {
+            cout << RED << "No more steps to undo." << RESET << endl ;
+        }
+    }
     bool getIsLoaded()
     {
         return isLoaded;
@@ -616,6 +635,10 @@ int main()
         {
             currentImage.save();
         }
+        else if (menu.getResponse() == -2 && currentImage.getIsLoaded())
+        {
+            currentImage.undo();
+        }
         else if (menu.getResponse() == 0)
         {
             menu.setIsActive(false);
@@ -623,6 +646,7 @@ int main()
         else {
             filters[menu.getResponse()]->getNeeds();
             filters[menu.getResponse()]->apply();
+            currentImage.currennt_img();
         }
     }
 
