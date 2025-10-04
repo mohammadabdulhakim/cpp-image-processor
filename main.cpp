@@ -21,6 +21,7 @@
 #include <stdexcept>
 #include <vector>
 #include<cmath>
+#include<unordered_map>
 #define M_PI 3.14159265359
 #define RESET   "\033[0m"
 #define RED     "\033[31m"
@@ -74,7 +75,6 @@ public:
     }
     // static string getId() {};
 };
-
 class GreyFilter : public Filter
 {
 public:
@@ -442,7 +442,102 @@ public:
         image = croppedImage;
     }
 };
+struct RGB {
+    int R, G, B;
+};
+class FrameFilter : public Filter
+{
+    int Thickness;
+    int R, G, B;
+public:
+    FrameFilter(Image& img) : Filter(img), R(0), G(0), B(0), Thickness(1) {};
 
+    string getName() { return "Frame"; };
+    static int getId() { return 12; };
+
+    void getNeeds() override
+    {
+        cout << "Enter frame color name (red, blue, gold...): with small letters \n";
+        string colorName;
+        cin >> colorName;
+
+        static unordered_map<string, RGB> colors = {
+            {"red", {255, 0, 0}},
+            {"green", {0, 255, 0}},
+            {"blue", {0, 0, 255}},
+            {"yellow", {255, 255, 0}},
+            {"cyan", {0, 255, 255}},
+            {"magenta", {255, 0, 255}},
+            {"white", {255, 255, 255}},
+            {"black", {0, 0, 0}},
+            {"gray", {128, 128, 128}},
+            {"orange", {255, 165, 0}},
+            {"purple", {128, 0, 128}},
+            {"pink", {255, 105, 180}},
+            {"gold", {255, 215, 0}},
+            {"brown", {165, 42, 42}}
+        };
+
+        if (colors.find(colorName) != colors.end())
+        {
+            RGB c = colors[colorName];
+            R = c.R;
+            G = c.G;
+            B = c.B;
+        }
+        else
+        {
+            cout << RED << "there is not this color \n" << RESET;
+            cout << YELLOW << "defaulting black\n" << RESET;
+        }
+
+        cout << "Enter frame Thickness : ";
+        cin >> Thickness;
+    }
+
+    void apply() override
+    {
+        int width = image.width;
+        int height = image.height;
+        for (int i = 0; i < width; i++)
+        {
+            for (int thickness = 0; thickness < Thickness; thickness++)
+            {
+                image(i, thickness, 0) = R;
+                image(i, thickness, 1) = G;
+                image(i, thickness, 2) = B;
+            }
+        }
+        for (int i = 0; i < width; i++)
+        {
+            for (int thickness = 0; thickness < Thickness; thickness++)
+            {
+                image(i, height - 1 - thickness, 0) = R;
+                image(i, height - 1 - thickness, 1) = G;
+                image(i, height - 1 - thickness, 2) = B;
+            }
+        }
+        for (int i = 0; i < height; i++)
+        {
+            for (int thickness = 0; thickness < Thickness; thickness++)
+            {
+                image(thickness, i, 0) = R;
+                image(thickness, i, 1) = G;
+                image(thickness, i, 2) = B;
+            }
+        }
+        for (int i = 0; i < height; i++)
+        {
+            for (int thickness = 0; thickness < Thickness; thickness++)
+            {
+                image(width - 1 - thickness, i, 0) = R;
+                image(width - 1 - thickness, i, 1) = G;
+                image(width - 1 - thickness, i, 2) = B;
+            }
+        }
+
+    }
+};
 class Menu
 {
     bool isActive = true;
@@ -525,7 +620,7 @@ public:
         memory.push(img);
     }
     void load()
-    {   
+    {
         string imgName;
         // cout << "Enter the image's name: ";
         // cin >> imgName;
@@ -536,7 +631,7 @@ public:
 
         img.loadNewImage(getImagePath(imgName));
         setIsLoaded(true);
-        memory = stack<Image>(); 
+        memory = stack<Image>();
         memory.push(img);
     };
 
@@ -562,7 +657,7 @@ public:
                 return;
             }
         }
-        
+
         string fullPath = folderPath + "/" + imgName;
 
         try {
@@ -571,11 +666,11 @@ public:
 
             if (fileExists) {
                 cout << GREEN << "Image saved successfully in existing file: "
-                    <<  RESET << fullPath << endl;
+                    << RESET << fullPath << endl;
             }
             else {
                 cout << GREEN << "File created successfully: "
-                     <<  RESET << fullPath << endl;
+                    << RESET << fullPath << endl;
             }
         }
         catch (const exception& e) {
@@ -591,7 +686,7 @@ public:
         }
         else
         {
-            cout << RED << "No more steps to undo." << RESET << endl ;
+            cout << RED << "No more steps to undo." << RESET << endl;
         }
     }
     bool getIsLoaded()
@@ -617,6 +712,7 @@ int main()
         {FlipFilter::getId(),make_shared<FlipFilter>(currentImage.img)},
         {RotateFilter::getId(),make_shared<RotateFilter>(currentImage.img)},
         {CropFiter::getId(),make_shared<CropFiter>(currentImage.img)},
+        {FrameFilter::getId(),make_shared<FrameFilter>(currentImage.img)}
     };
 
     Menu menu(filters);
