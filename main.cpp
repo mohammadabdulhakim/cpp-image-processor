@@ -75,6 +75,34 @@ public:
     }
     // static string getId() {};
 };
+class Old_TvFilter : public Filter
+{
+public : 
+    Old_TvFilter(Image& img) : Filter(img) {};
+    string getName() { return "Old Tv"; };
+    static int getId() { return 17; };
+    void apply() override
+    {
+        try {
+            for (int i = 0; i < image.height -1 ; i+=2)
+            {
+                for (int j = 0; j < image.width ; j++)
+                {
+                    for (int k = 0; k < 3;k++)
+                    {
+                        image(j, i, k) = 0.5 * image(j, i, k);
+                    }
+                }
+            }
+        }
+
+        catch (const std::exception& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+            throw;
+        }
+    }
+    void getNeeds() override {};
+};
 class GreyFilter : public Filter
 {
 public:
@@ -712,7 +740,8 @@ int main()
         {FlipFilter::getId(),make_shared<FlipFilter>(currentImage.img)},
         {RotateFilter::getId(),make_shared<RotateFilter>(currentImage.img)},
         {CropFiter::getId(),make_shared<CropFiter>(currentImage.img)},
-        {FrameFilter::getId(),make_shared<FrameFilter>(currentImage.img)}
+        {FrameFilter::getId(),make_shared<FrameFilter>(currentImage.img)},
+        {Old_TvFilter::getId(),make_shared<Old_TvFilter>(currentImage.img) }
     };
 
     Menu menu(filters);
