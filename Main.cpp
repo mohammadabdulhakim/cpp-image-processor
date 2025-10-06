@@ -519,102 +519,235 @@ public:
         image = croppedImage;
     }
 };
+//struct RGB {
+//    int R, G, B;
+//};
+//class FrameFilter : public Filter
+//{
+//    int Thickness;
+//    int R, G, B;
+//public:
+//    FrameFilter(Image& img) : Filter(img), R(0), G(0), B(0), Thickness(1) {};
+//
+//    string getName() { return "Frame"; };
+//    static int getId() { return 12; };
+//
+//    void getNeeds() override
+//    {
+//        cout << "Enter frame color name (red, blue, gold...): with small letters \n";
+//        string colorName;
+//        cin >> colorName;
+//
+//        static unordered_map<string, RGB> colors = {
+//            {"red", {255, 0, 0}},
+//            {"green", {0, 255, 0}},
+//            {"blue", {0, 0, 255}},
+//            {"yellow", {255, 255, 0}},
+//            {"cyan", {0, 255, 255}},
+//            {"magenta", {255, 0, 255}},
+//            {"white", {255, 255, 255}},
+//            {"black", {0, 0, 0}},
+//            {"gray", {128, 128, 128}},
+//            {"orange", {255, 165, 0}},
+//            {"purple", {128, 0, 128}},
+//            {"pink", {255, 105, 180}},
+//            {"gold", {255, 215, 0}},
+//            {"brown", {165, 42, 42}}
+//        };
+//
+//        if (colors.find(colorName) != colors.end())
+//        {
+//            RGB c = colors[colorName];
+//            R = c.R;
+//            G = c.G;
+//            B = c.B;
+//        }
+//        else
+//        {
+//            cout << RED << "there is not this color \n" << RESET;
+//            cout << YELLOW << "defaulting black\n" << RESET;
+//        }
+//
+//        cout << "Enter frame Thickness : ";
+//        cin >> Thickness;
+//    }
+//
+//    void apply() override
+//    {
+//        int width = image.width;
+//        int height = image.height;
+//        for (int i = 0; i < width; i++)
+//        {
+//            for (int thickness = 0; thickness < Thickness; thickness++)
+//            {
+//                image(i, thickness, 0) = R;
+//                image(i, thickness, 1) = G;
+//                image(i, thickness, 2) = B;
+//            }
+//        }
+//        for (int i = 0; i < width; i++)
+//        {
+//            for (int thickness = 0; thickness < Thickness; thickness++)
+//            {
+//                image(i, height - 1 - thickness, 0) = R;
+//                image(i, height - 1 - thickness, 1) = G;
+//                image(i, height - 1 - thickness, 2) = B;
+//            }
+//        }
+//        for (int i = 0; i < height; i++)
+//        {
+//            for (int thickness = 0; thickness < Thickness; thickness++)
+//            {
+//                image(thickness, i, 0) = R;
+//                image(thickness, i, 1) = G;
+//                image(thickness, i, 2) = B;
+//            }
+//        }
+//        for (int i = 0; i < height; i++)
+//        {
+//            for (int thickness = 0; thickness < Thickness; thickness++)
+//            {
+//                image(width - 1 - thickness, i, 0) = R;
+//                image(width - 1 - thickness, i, 1) = G;
+//                image(width - 1 - thickness, i, 2) = B;
+//            }
+//        }
+//
+//    } 
 struct RGB {
     int R, G, B;
 };
-class FrameFilter : public Filter
-{
+
+class FrameFilter : public Filter {
     int Thickness;
     int R, G, B;
+    bool isDecorative;
 public:
-    FrameFilter(Image& img) : Filter(img), R(0), G(0), B(0), Thickness(1) {};
+    FrameFilter(Image& img) : Filter(img), R(0), G(0), B(0), Thickness(1), isDecorative(false) {};
 
-    string getName() { return "Frame"; };
-    static int getId() { return 12; };
+    string getName() { return "Frame"; }
+    static int getId() { return 12; }
 
-    void getNeeds() override
-    {
-        cout << "Enter frame color name (red, blue, gold...): with small letters \n";
-        string colorName;
-        cin >> colorName;
-
-        static unordered_map<string, RGB> colors = {
-            {"red", {255, 0, 0}},
-            {"green", {0, 255, 0}},
-            {"blue", {0, 0, 255}},
-            {"yellow", {255, 255, 0}},
-            {"cyan", {0, 255, 255}},
-            {"magenta", {255, 0, 255}},
-            {"white", {255, 255, 255}},
-            {"black", {0, 0, 0}},
-            {"gray", {128, 128, 128}},
-            {"orange", {255, 165, 0}},
-            {"purple", {128, 0, 128}},
-            {"pink", {255, 105, 180}},
-            {"gold", {255, 215, 0}},
-            {"brown", {165, 42, 42}}
-        };
-
-        if (colors.find(colorName) != colors.end())
+    void getNeeds() override {
+        cout << "Choose frame type:\n";
+        cout << "1. Normal Frame\n";
+        cout << "2. Decorative Frame\n";
+        int choice;
+        cin >> choice;
+        if (choice == 2) 
         {
-            RGB c = colors[colorName];
-            R = c.R;
-            G = c.G;
-            B = c.B;
+            isDecorative = true;
+            cout << CYAN << "Decorative frame selected!\n" << RESET;
         }
-        else
+        else 
         {
-            cout << RED << "there is not this color \n" << RESET;
-            cout << YELLOW << "defaulting black\n" << RESET;
+            isDecorative = false;
+            cout << "Choose how to enter color:\n";
+            cout << "1. By color name\n";
+            cout << "2. By RGB values\n";
+            int colorChoice; cin >> colorChoice;
+            
+
+            if (colorChoice == 1) {
+                cout << "Enter frame color name (red, blue, gold...): with small letters\n";
+                string colorName;
+                cin >> colorName;
+
+                static unordered_map<string, RGB> colors = 
+                {
+                    {"red", {255, 0, 0}},
+                    {"green", {0, 255, 0}},
+                    {"blue", {0, 0, 255}},
+                    {"yellow", {255, 255, 0}},
+                    {"cyan", {0, 255, 255}},
+                    {"magenta", {255, 0, 255}},
+                    {"white", {255, 255, 255}},
+                    {"black", {0, 0, 0}},
+                    {"gray", {128, 128, 128}},
+                    {"orange", {255, 165, 0}},
+                    {"purple", {128, 0, 128}},
+                    {"pink", {255, 105, 180}},
+                    {"gold", {255, 215, 0}},
+                    {"brown", {165, 42, 42}}
+                };
+
+                if (colors.find(colorName) != colors.end()) {
+                    RGB c = colors[colorName];
+                    R = c.R;
+                    G = c.G;
+                    B = c.B;
+                }
+                else {
+                    cout << RED << "Unknown color name.\n" << RESET;
+                    cout << YELLOW << "Defaulting to black.\n" << RESET;
+                    R = G = B = 0;
+                }
+            }
+            else {
+                cout << "Enter R value (0-255): ";
+                cin >> R;
+                cout << "Enter G value (0-255): ";
+                cin >> G;
+                cout << "Enter B value (0-255): ";
+                cin >> B;
+            }
         }
 
-        cout << "Enter frame Thickness : ";
+        cout << "Enter frame thickness: ";
         cin >> Thickness;
     }
 
-    void apply() override
+    void apply() override 
     {
         int width = image.width;
         int height = image.height;
-        for (int i = 0; i < width; i++)
-        {
-            for (int thickness = 0; thickness < Thickness; thickness++)
-            {
-                image(i, thickness, 0) = R;
-                image(i, thickness, 1) = G;
-                image(i, thickness, 2) = B;
-            }
-        }
-        for (int i = 0; i < width; i++)
-        {
-            for (int thickness = 0; thickness < Thickness; thickness++)
-            {
-                image(i, height - 1 - thickness, 0) = R;
-                image(i, height - 1 - thickness, 1) = G;
-                image(i, height - 1 - thickness, 2) = B;
-            }
-        }
-        for (int i = 0; i < height; i++)
-        {
-            for (int thickness = 0; thickness < Thickness; thickness++)
-            {
-                image(thickness, i, 0) = R;
-                image(thickness, i, 1) = G;
-                image(thickness, i, 2) = B;
-            }
-        }
-        for (int i = 0; i < height; i++)
-        {
-            for (int thickness = 0; thickness < Thickness; thickness++)
-            {
-                image(width - 1 - thickness, i, 0) = R;
-                image(width - 1 - thickness, i, 1) = G;
-                image(width - 1 - thickness, i, 2) = B;
-            }
-        }
 
+        if (isDecorative == false) 
+        {
+            for (int i = 0; i < width; i++) 
+            {
+                for (int t = 0; t < Thickness; t++) 
+                {
+                    image(i, t, 0) = R;
+                    image(i, t, 1) = G;
+                    image(i, t, 2) = B;
+                }
+            }
+            for (int i = 0; i < width; i++) 
+            {
+                for (int t = 0; t < Thickness; t++) 
+                {
+                    image(i, height - 1 - t, 0) = R;
+                    image(i, height - 1 - t, 1) = G;
+                    image(i, height - 1 - t, 2) = B;
+                }
+            }
+            for (int i = 0; i < height; i++) 
+            {
+                for (int t = 0; t < Thickness; t++) 
+                {
+                    image(t, i, 0) = R;
+                    image(t, i, 1) = G;
+                    image(t, i, 2) = B;
+                }
+            }
+            for (int i = 0; i < height; i++) 
+            {
+                for (int t = 0; t < Thickness; t++) 
+                {
+                    image(width - 1 - t, i, 0) = R;
+                    image(width - 1 - t, i, 1) = G;
+                    image(width - 1 - t, i, 2) = B;
+                }
+            }
+        }
+        else 
+        {
+            // Decorative frame 
+        }
     }
 };
+
 class Menu
 {
     bool isActive = true;
