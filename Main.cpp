@@ -33,7 +33,7 @@
 #include "iostream"
 #include <filesystem>
 namespace fs = std::filesystem;
-using namespace std; // This load a lot of files into the project, use  better;
+using namespace std;
 
 string getImagePath(string imgName) {
     return ("assets/" + imgName);
@@ -489,6 +489,37 @@ public:
     }
 };
 
+class BrightnessFilter : public Filter
+{
+    double value;
+public:
+    BrightnessFilter(Image& img) : Filter(img) {};
+    string getName() { return "Brightness"; };
+    static int getId() { return 8; };
+
+    void apply() override {
+        cout << "here is: " << value << '\n';
+        for (int i = 0; i < image.width; i++) {
+            for (int j = 0; j < image.height; j++) {
+                for (int k = 0; k < 3; k++) {
+                    int newValue = image(i, j, k) * value;
+                    if (newValue > 255) newValue = 255;
+                    if (newValue < 0) newValue = 0;
+                    image(i, j, k) = newValue;
+                }
+            }
+        }
+    }
+
+    void getNeeds() override {
+        cout << "Enter the brightness\n- 1 normal\n- > 1 Brightup\n- < 1 Darkup\n ex: 1.5 will light the image up by 50%  \n==>  ";
+        cin >> value;
+        cout << "Value is: " << value << '\n';
+    }
+};
+
+
+
 class CropFiter : public Filter {
     int corner[2]{ 0 };
     int dimensions[2]{ 100 };
@@ -921,6 +952,7 @@ int main()
         {MergeFilter::getId(),make_shared<MergeFilter>(currentImage.img)},
         {FlipFilter::getId(),make_shared<FlipFilter>(currentImage.img)},
         {RotateFilter::getId(),make_shared<RotateFilter>(currentImage.img)},
+        {BrightnessFilter::getId(),make_shared<BrightnessFilter>(currentImage.img)},
         {CropFiter::getId(),make_shared<CropFiter>(currentImage.img)},
         {FrameFilter::getId(),make_shared<FrameFilter>(currentImage.img)},
         {Old_TvFilter::getId(),make_shared<Old_TvFilter>(currentImage.img) } ,
