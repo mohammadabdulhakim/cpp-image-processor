@@ -81,7 +81,7 @@ class Horizontal_skewFilter : public Filter
 public :
     Horizontal_skewFilter(Image& img) : Filter(img) {};
     string getName() { return "Horizontal Skew"; };
-    static int getId() { return 20; };
+    static string getId() { return "20"; };
     void apply()
     {
         try 
@@ -129,7 +129,7 @@ class Old_TvFilter : public Filter
 public : 
     Old_TvFilter(Image& img) : Filter(img) {};
     string getName() { return "Old Tv"; };
-    static int getId() { return 17; };
+    static string getId() { return "17"; };
     void apply() override
     {
         try {
@@ -157,7 +157,7 @@ class GreyFilter : public Filter
 public:
     GreyFilter(Image& img) : Filter(img) {};
     string getName() { return "Grey Scale"; };
-    static int getId() { return 2; };
+    static string getId() { return "2"; };
     void apply() override
     {
         try
@@ -196,7 +196,7 @@ class WBFilter : public Filter
 public:
     WBFilter(Image& img) : Filter(img) {};
     string getName() { return "White and Black"; };
-    static int getId() { return 3; };
+    static string getId() { return "3"; };
     void apply() override
     {
         for (int i = 0; i < image.width; i++)
@@ -229,7 +229,7 @@ class MergeFilter : public Filter
 public:
     MergeFilter(Image& img) : Filter(img) {};
     string getName() { return "Merge"; };
-    static int getId() { return 5; };
+    static string getId() { return "5"; };
 
     void getNeeds() override {
         cout << "Enter the image's name: ";
@@ -341,7 +341,7 @@ class FlipFilter : public Filter
 public:
     FlipFilter(Image& img) : Filter(img) {};
     string getName() { return "Flip"; };
-    static int getId() { return 6; };
+    static string getId() { return "6"; };
 
     void getNeeds() override
     {
@@ -415,7 +415,7 @@ public:
         }
     }
     string getName() { return "Invert"; };
-    static int getId() { return 4; };
+    static string getId() { return "4"; };
 
     void getNeeds() override {};
 
@@ -427,7 +427,7 @@ class RotateFilter : public Filter
 public:
     RotateFilter(Image& img) : Filter(img) {};
     string getName() { return "Rotate"; };
-    static int getId() { return 7; };
+    static string getId() { return "7"; };
 
     void apply() override
     {
@@ -495,7 +495,7 @@ class BrightnessFilter : public Filter
 public:
     BrightnessFilter(Image& img) : Filter(img) {};
     string getName() { return "Brightness"; };
-    static int getId() { return 8; };
+    static string getId() { return "8"; };
 
     void apply() override {
         cout << "here is: " << value << '\n';
@@ -518,8 +518,6 @@ public:
     }
 };
 
-
-
 class CropFiter : public Filter {
     int corner[2]{ 0 };
     int dimensions[2]{ 100 };
@@ -533,7 +531,7 @@ public:
         cin >> dimensions[0] >> dimensions[1];
     }
     string getName() { return "Crop"; };
-    static int getId() { return 9; };
+    static string getId() { return "9"; };
 
     void apply() override {
         Image croppedImage(dimensions[0], dimensions[1]);
@@ -550,101 +548,7 @@ public:
         image = croppedImage;
     }
 };
-//struct RGB {
-//    int R, G, B;
-//};
-//class FrameFilter : public Filter
-//{
-//    int Thickness;
-//    int R, G, B;
-//public:
-//    FrameFilter(Image& img) : Filter(img), R(0), G(0), B(0), Thickness(1) {};
-//
-//    string getName() { return "Frame"; };
-//    static int getId() { return 12; };
-//
-//    void getNeeds() override
-//    {
-//        cout << "Enter frame color name (red, blue, gold...): with small letters \n";
-//        string colorName;
-//        cin >> colorName;
-//
-//        static unordered_map<string, RGB> colors = {
-//            {"red", {255, 0, 0}},
-//            {"green", {0, 255, 0}},
-//            {"blue", {0, 0, 255}},
-//            {"yellow", {255, 255, 0}},
-//            {"cyan", {0, 255, 255}},
-//            {"magenta", {255, 0, 255}},
-//            {"white", {255, 255, 255}},
-//            {"black", {0, 0, 0}},
-//            {"gray", {128, 128, 128}},
-//            {"orange", {255, 165, 0}},
-//            {"purple", {128, 0, 128}},
-//            {"pink", {255, 105, 180}},
-//            {"gold", {255, 215, 0}},
-//            {"brown", {165, 42, 42}}
-//        };
-//
-//        if (colors.find(colorName) != colors.end())
-//        {
-//            RGB c = colors[colorName];
-//            R = c.R;
-//            G = c.G;
-//            B = c.B;
-//        }
-//        else
-//        {
-//            cout << RED << "there is not this color \n" << RESET;
-//            cout << YELLOW << "defaulting black\n" << RESET;
-//        }
-//
-//        cout << "Enter frame Thickness : ";
-//        cin >> Thickness;
-//    }
-//
-//    void apply() override
-//    {
-//        int width = image.width;
-//        int height = image.height;
-//        for (int i = 0; i < width; i++)
-//        {
-//            for (int thickness = 0; thickness < Thickness; thickness++)
-//            {
-//                image(i, thickness, 0) = R;
-//                image(i, thickness, 1) = G;
-//                image(i, thickness, 2) = B;
-//            }
-//        }
-//        for (int i = 0; i < width; i++)
-//        {
-//            for (int thickness = 0; thickness < Thickness; thickness++)
-//            {
-//                image(i, height - 1 - thickness, 0) = R;
-//                image(i, height - 1 - thickness, 1) = G;
-//                image(i, height - 1 - thickness, 2) = B;
-//            }
-//        }
-//        for (int i = 0; i < height; i++)
-//        {
-//            for (int thickness = 0; thickness < Thickness; thickness++)
-//            {
-//                image(thickness, i, 0) = R;
-//                image(thickness, i, 1) = G;
-//                image(thickness, i, 2) = B;
-//            }
-//        }
-//        for (int i = 0; i < height; i++)
-//        {
-//            for (int thickness = 0; thickness < Thickness; thickness++)
-//            {
-//                image(width - 1 - thickness, i, 0) = R;
-//                image(width - 1 - thickness, i, 1) = G;
-//                image(width - 1 - thickness, i, 2) = B;
-//            }
-//        }
-//
-//    } 
+
 struct RGB {
     int R, G, B;
 };
@@ -657,7 +561,7 @@ public:
     FrameFilter(Image& img) : Filter(img), R(0), G(0), B(0), Thickness(1), isDecorative(false) {};
 
     string getName() { return "Frame"; }
-    static int getId() { return 12; }
+    static string getId() { return "12"; }
 
     void getNeeds() override {
         cout << "Choose frame type:\n";
@@ -779,14 +683,16 @@ public:
     }
 };
 
+
+// ======================================================================================================
 class Menu
 {
     bool isActive = true;
-    int res;
-    map<int, shared_ptr<Filter>>& filters;
+    string res;
+    unordered_map<string, shared_ptr<Filter>>& filters;
 
 public:
-    Menu(map<int, shared_ptr<Filter>>& filters) : filters(filters) {};
+    Menu(unordered_map<string, shared_ptr<Filter>>& filters) : filters(filters) {};
 
     void welcomeMsg()
     {
@@ -803,7 +709,7 @@ public:
         // cout << "\nSelect by typing the number of the operation:\n";
 
         // cout << "1. Load an image to work on.\n";
-        std::cout << RESET << GREEN << "1] Load Image\n";
+        std::cout << RESET << GREEN << "[L] Load Image\n";
         if (fileLoaded)
         {
             // cout << "Filters\n";
@@ -814,15 +720,15 @@ public:
 
             auto it = filters.begin();
             while (it != filters.end()) {
-                cout << '\t' << it->first << "] " << it->second->getName() << " Filter.\n";
+                cout << "\t [" << it->first << "] " << it->second->getName() << " Filter.\n";
                 ++it;
             }
 
-            cout << "\t-1] Save the Image.\n";
-            cout << "\t-2] Undo the Image.\n";
+            cout << "\t[s] Save the Image.\n";
+            cout << "\t[u] Undo \t [r] Redo\n"  ;
         }
         // cout << "0. Exit.\n";
-        std::cout << RESET << CYAN << "0] Exit\n" << RESET;
+        std::cout << RESET << RED << "[0] Exit\n" << RESET;
         cout << "-------------------------------\n";
     }
 
@@ -843,7 +749,7 @@ public:
         cout << '\n';
     }
 
-    int getResponse()
+    string getResponse()
     {
         return res;
     }
@@ -883,6 +789,11 @@ public:
         string imgName;
         cin >> imgName;
 
+        if (!fs::exists("output")) fs::create_directory("output");
+        img.saveImage(("output/"+imgName));
+        cout << GREEN << "Your image has been saved successfully!";
+
+        /*
         cout << CYAN << "Enter folder name to save image : " << RESET;
         string folderPath;
         cin >> folderPath;
@@ -898,9 +809,7 @@ public:
                 return;
             }
         }
-
         string fullPath = folderPath + "/" + imgName;
-
         try {
             bool fileExists = fs::exists(fullPath);
             img.saveImage(fullPath);
@@ -917,6 +826,7 @@ public:
         catch (const exception& e) {
             cerr << RED << "Error saving file: " << e.what() << RESET << endl;
         }
+        */
     }
     void undo()
     {
@@ -945,7 +855,7 @@ int main()
 {
     CurrentImage currentImage;
 
-    map<int, shared_ptr<Filter>> filters = {
+    unordered_map<string, shared_ptr<Filter>> filters = {
         {GreyFilter::getId(),make_shared<GreyFilter>(currentImage.img)},
         {WBFilter::getId(),make_shared<WBFilter>(currentImage.img)},
         {InvertFilter::getId(),make_shared<InvertFilter>(currentImage.img)},
@@ -967,19 +877,19 @@ int main()
         menu.showMenuOptions(currentImage.getIsLoaded());
         menu.setResponse();
 
-        if (menu.getResponse() == 1)
+        if (menu.getResponse() == "l")
         {
             currentImage.load();
         }
-        else if (menu.getResponse() == -1 && currentImage.getIsLoaded())
+        else if (menu.getResponse() == "s" && currentImage.getIsLoaded())
         {
             currentImage.save();
         }
-        else if (menu.getResponse() == -2 && currentImage.getIsLoaded())
+        else if (menu.getResponse() == "u" && currentImage.getIsLoaded())
         {
             currentImage.undo();
         }
-        else if (menu.getResponse() == 0)
+        else if (menu.getResponse() == "0")
         {
             menu.setIsActive(false);
         }
