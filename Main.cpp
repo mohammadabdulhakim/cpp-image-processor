@@ -50,38 +50,37 @@ public:
     virtual void apply() = 0;
     virtual void getNeeds() = 0;
     virtual string getName() = 0;
-    static void resizeImage(Image& img, int newW, int newH)
-    {
-        Image out(newW, newH);
+    static void resizeImage(Image &img, int newW, int newH) {
+        Image resizedImage(newW, newH);
 
         double xRatio = static_cast<double>(img.width) / newW;
         double yRatio = static_cast<double>(img.height) / newH;
 
-        for (int y = 0; y < newH; ++y)
-        {
-            for (int x = 0; x < newW; ++x)
-            {
-                int nearestX = static_cast<int>(x * xRatio);
-                int nearestY = static_cast<int>(y * yRatio);
+        for (int x = 0; x < newW; x++) {
+            for (int y = 0; y<newH; y++) {
+                int nearestX = static_cast<int>(x*xRatio);
+                int nearestY = static_cast<int>(y*yRatio);
 
-                for (int c = 0; c < 3; ++c)
-                {
-                    out(x, y, c) = img(nearestX, nearestY, c);
+                nearestX = min(nearestX, img.width - 1);
+                nearestY = min(nearestY, img.height - 1);
+
+                for (int k=0; k<img.channels; k++) {
+                    resizedImage(x,y,k) = img(nearestX, nearestY, k);
                 }
             }
         }
 
-        img = out;
+        img = resizedImage;
     }
     // static string getId() {};
 };
-class Horizontal_skewFilter : public Filter
+class SkewingFilter : public Filter
 {
     int angle; 
 public :
-    Horizontal_skewFilter(Image& img) : Filter(img) {};
+    SkewingFilter(Image& img) : Filter(img) {};
     string getName() { return "Horizontal Skew"; };
-    static string getId() { return "19"; };
+    static string getId() { return "18"; };
     void apply()
     {
         try 
@@ -124,12 +123,12 @@ public :
     }
 };
 
-class Old_TvFilter : public Filter
+class TVFilter : public Filter
 {
 public : 
-    Old_TvFilter(Image& img) : Filter(img) {};
-    string getName() { return "Old Tv"; };
-    static string getId() { return "16"; };
+    TVFilter(Image& img) : Filter(img) {};
+    string getName() { return "Old TV"; };
+    static string getId() { return "15"; };
     void apply() override
     {
         try {
@@ -549,6 +548,23 @@ public:
     }
 };
 
+class ResizeFiter : public Filter {
+    int dimensions[2]{ 100 };
+
+public:
+    ResizeFiter(Image& img) :Filter(img) {};
+    void getNeeds() override {
+        cout << "Please enter the new dimensions of the image. (100 100): ";
+        cin >> dimensions[0] >> dimensions[1];
+    }
+    string getName() { return "Resizing"; };
+    static string getId() { return "11"; };
+
+    void apply() override {
+        resizeImage(image, dimensions[0], dimensions[1]);
+    }
+};
+
 struct RGB {
     int R, G, B;
 };
@@ -561,7 +577,7 @@ public:
     FrameFilter(Image& img) : Filter(img), R(0), G(0), B(0), Thickness(1), isDecorative(false) {};
 
     string getName() { return "Frame"; }
-    static string getId() { return "11"; }
+    static string getId() { return "9"; }
 
     void getNeeds() override {
         cout << "Choose frame type:\n";
@@ -713,7 +729,7 @@ public:
         if (fileLoaded)
         {
             // cout << "Filters\n";
-            std::cout << "\n\n";
+            // std::cout << "\n\n";
             std::cout << CYAN << "=====================\n";
             std::cout << RESET << BOLD << "    Choose Filters    \n";
             std::cout << RESET << CYAN << "======================\n" << RESET;
@@ -774,7 +790,7 @@ public:
         std::cout << CYAN << "Please Enter image name you want to apply filter on: ";
         std::cout << RESET << GREEN << BOLD;
         std::cin >> imgName;
-        std::cout << RESET;
+        std::cout << "\n\n" << RESET;
 
         img.loadNewImage(getImagePath(imgName));
         setIsLoaded(true);
@@ -865,8 +881,9 @@ int main()
         {BrightnessFilter::getId(),make_shared<BrightnessFilter>(currentImage.img)},
         {CropFiter::getId(),make_shared<CropFiter>(currentImage.img)},
         {FrameFilter::getId(),make_shared<FrameFilter>(currentImage.img)},
-        {Old_TvFilter::getId(),make_shared<Old_TvFilter>(currentImage.img) } ,
-        {Horizontal_skewFilter::getId(),make_shared<Horizontal_skewFilter>(currentImage.img)}
+        {TVFilter::getId(),make_shared<TVFilter>(currentImage.img) } ,
+        {SkewingFilter::getId(),make_shared<SkewingFilter>(currentImage.img)},
+        {ResizeFiter::getId(),make_shared<ResizeFiter>(currentImage.img)},
     };
 
     Menu menu(filters);
