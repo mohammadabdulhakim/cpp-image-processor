@@ -32,9 +32,10 @@
 #define BOLD    "\033[1m"
 #include "iostream"
 #include <filesystem>
+#include<algorithm>
 namespace fs = std::filesystem;
 using namespace std;
-
+# define ll long long 
 string getImagePath(string imgName) {
     return ("assets/" + imgName);
 }
@@ -74,32 +75,107 @@ public:
     }
     // static string getId() {};
 };
+
+class BlurFilter : public Filter {
+    int Radius ;
+
+public:
+    BlurFilter(Image& img) : Filter(img) {};
+    string getName() { return "Blur"; };
+    static string getId() { return "12"; };
+
+    void Prefix_sum(Image&image ,vector<vector<ll>>&prefixR , vector<vector<ll>>& prefixG , vector<vector<ll>>& prefixB)
+    {
+        for (int i = 1; i <= image.width; i++)
+        {
+            for (int j = 1; j <= image.height; j++)
+            {
+                ll r = image(i - 1, j - 1, 0);
+                ll g = image(i - 1, j - 1, 1);
+                ll b = image(i - 1, j - 1, 2);
+                prefixR[i][j] = r + prefixR[i - 1][j] + prefixR[i][j - 1] - prefixR[i - 1][j - 1];
+                prefixG[i][j] = g + prefixG[i - 1][j] + prefixG[i][j - 1] - prefixG[i - 1][j - 1];
+                prefixB[i][j] = b + prefixB[i - 1][j] + prefixB[i][j - 1] - prefixB[i - 1][j - 1];
+            }
+        }
+    }
+    void apply() override
+    {
+        try
+        {
+            Image Blured_image(image.width, image.height);
+            vector<vector<ll>> PrefixR(image.width + 1, vector<ll>(image.height + 1, 0));
+            vector<vector<ll>> PrefixG(image.width + 1, vector<ll>(image.height + 1, 0));
+            vector<vector<ll>> PrefixB(image.width + 1, vector<ll>(image.height + 1, 0));
+            Prefix_sum(image, PrefixR, PrefixG, PrefixB);
+            for (int i = 0; i < image.width; i++)
+            {
+                for (int j = 0; j < image.height; j++)
+                {
+                    int x1, x2, y1, y2;
+
+                    x1 = max(0, i - Radius);
+                    x2 = min(image.width - 1, i + Radius);
+                    y1 = max(0, j - Radius);
+                    y2 = min(image.height - 1, j + Radius);
+
+                    x1++, x2++, y1++, y2++;
+
+
+                    ll SUM_R, SUM_G, SUM_B;
+                    SUM_R = PrefixR[x2][y2] + PrefixR[x1 - 1][y1 - 1] - PrefixR[x2][y1 - 1] - PrefixR[x1 - 1][y2];
+                    SUM_G = PrefixG[x2][y2] + PrefixG[x1 - 1][y1 - 1] - PrefixG[x2][y1 - 1] - PrefixG[x1 - 1][y2];
+                    SUM_B = PrefixB[x2][y2] + PrefixB[x1 - 1][y1 - 1] - PrefixB[x2][y1 - 1] - PrefixB[x1 - 1][y2];
+
+
+                    ll A = (2 * Radius + 1) * (2 * Radius + 1);
+
+
+                    Blured_image(i, j, 0) = static_cast<unsigned char>(SUM_R / A);
+                    Blured_image(i, j, 1) = static_cast<unsigned char>(SUM_G / A);
+                    Blured_image(i, j, 2) = static_cast<unsigned char>(SUM_B / A);
+                }
+            }
+            image = Blured_image;
+        }
+        catch (const std::exception& e)
+        {
+            std::cerr << "Error: " << e.what() << std::endl;
+        }
+    }
+    void getNeeds() override 
+    {
+        cout << "Enter strenght of blur : "; cin >> Radius;
+    }
+};
+
+
 class SkewingFilter : public Filter
 {
-    int angle; 
-public :
+    int angle;
+public:
     SkewingFilter(Image& img) : Filter(img) {};
     string getName() { return "Horizontal Skew"; };
     static string getId() { return "18"; };
     void apply()
     {
-        try 
+        try
         {
-            double tan_angle = tan(angle * M_PI / 180 );
-            double slope = -tan_angle ; 
-            double new_width = image.width + abs(image.height * slope);
+            double tan_angle = tan(angle * M_PI / 180);
+            double slope = -tan_angle;
+            int new_width = image.width + abs(image.height * slope);
             int checker = 0;
             if (slope < 0)
             {
                 checker = abs(image.height * slope);
             }
 
-            Image Skewed_image(new_width, image.height); 
+            Image Skewed_image(new_width, image.height);
             for (int x = 0; x < image.width; x++)
             {
                 for (int y = 0; y < image.height; y++)
                 {
-                    double X = x + (slope * y) + checker ; 
+                    double X = x + (slope * y) + checker;
                     /*if (X < 0)  X += abs(image.height * slope); */
                     for (int k = 0; k < 3; k++)
                     {
@@ -110,14 +186,14 @@ public :
                     }
                 }
             }
-            image = Skewed_image; 
+            image = Skewed_image;
         }
-        catch (const std::exception& e) {  
-            std::cerr << "Error: " << e.what() << std::endl;  
-            throw;  
+        catch (const std::exception& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+            throw;
         }
     }
-    
+
     void getNeeds() override {
         cout << "Enter skew angle : "; cin >> angle;
     }
@@ -132,9 +208,9 @@ public :
     void apply() override
     {
         try {
-            for (int i = 0; i < image.height -1 ; i+=2)
+            for (int i = 0; i < image.height - 1; i += 2)
             {
-                for (int j = 0; j < image.width ; j++)
+                for (int j = 0; j < image.width; j++)
                 {
                     for (int k = 0; k < 3;k++)
                     {
@@ -573,74 +649,76 @@ class FrameFilter : public Filter {
     int Thickness;
     int R, G, B;
     bool isDecorative;
+
 public:
-    FrameFilter(Image& img) : Filter(img), R(0), G(0), B(0), Thickness(1), isDecorative(false) {};
+    FrameFilter(Image& img) : Filter(img), R(0), G(0), B(0), Thickness(1), isDecorative(false) {}
 
     string getName() { return "Frame"; }
     static string getId() { return "9"; }
 
     void getNeeds() override {
+        static unordered_map<string, RGB> colors = {
+            {"red", {255, 0, 0}},
+            {"green", {0, 255, 0}},
+            {"blue", {0, 0, 255}},
+            {"yellow", {255, 255, 0}},
+            {"cyan", {0, 255, 255}},
+            {"magenta", {255, 0, 255}},
+            {"white", {255, 255, 255}},
+            {"black", {0, 0, 0}},
+            {"gray", {128, 128, 128}},
+            {"orange", {255, 165, 0}},
+            {"purple", {128, 0, 128}},
+            {"pink", {255, 105, 180}},
+            {"gold", {255, 215, 0}},
+            {"brown", {165, 42, 42}}
+        };
+
         cout << "Choose frame type:\n";
         cout << "1. Normal Frame\n";
         cout << "2. Decorative Frame\n";
         int choice;
         cin >> choice;
-        if (choice == 2) 
+
+        if (choice == 2)
         {
             isDecorative = true;
             cout << CYAN << "Decorative frame selected!\n" << RESET;
+            cout << "Enter frame color name with small letters\n";
+            string colorName;
+            cin >> colorName;
+
+            if (colors.find(colorName) != colors.end())
+            {
+                RGB c = colors[colorName];
+                R = c.R;
+                G = c.G;
+                B = c.B;
+            }
+            else
+            {
+                cout << RED << "Unknown color name.\n" << RESET;
+                cout << YELLOW << "Enter color with R G B values: \n" << RESET;
+                cin >> R >> G >> B;
+            }
         }
-        else 
+        else
         {
             isDecorative = false;
-            cout << "Choose how to enter color:\n";
-            cout << "1. By color name\n";
-            cout << "2. By RGB values\n";
-            int colorChoice; cin >> colorChoice;
-            
+            cout << "Enter frame color name with small letters\n";
+            string colorName;
+            cin >> colorName;
 
-            if (colorChoice == 1) {
-                cout << "Enter frame color name (red, blue, gold...): with small letters\n";
-                string colorName;
-                cin >> colorName;
-
-                static unordered_map<string, RGB> colors = 
-                {
-                    {"red", {255, 0, 0}},
-                    {"green", {0, 255, 0}},
-                    {"blue", {0, 0, 255}},
-                    {"yellow", {255, 255, 0}},
-                    {"cyan", {0, 255, 255}},
-                    {"magenta", {255, 0, 255}},
-                    {"white", {255, 255, 255}},
-                    {"black", {0, 0, 0}},
-                    {"gray", {128, 128, 128}},
-                    {"orange", {255, 165, 0}},
-                    {"purple", {128, 0, 128}},
-                    {"pink", {255, 105, 180}},
-                    {"gold", {255, 215, 0}},
-                    {"brown", {165, 42, 42}}
-                };
-
-                if (colors.find(colorName) != colors.end()) {
-                    RGB c = colors[colorName];
-                    R = c.R;
-                    G = c.G;
-                    B = c.B;
-                }
-                else {
-                    cout << RED << "Unknown color name.\n" << RESET;
-                    cout << YELLOW << "Defaulting to black.\n" << RESET;
-                    R = G = B = 0;
-                }
+            if (colors.find(colorName) != colors.end()) {
+                RGB c = colors[colorName];
+                R = c.R;
+                G = c.G;
+                B = c.B;
             }
             else {
-                cout << "Enter R value (0-255): ";
-                cin >> R;
-                cout << "Enter G value (0-255): ";
-                cin >> G;
-                cout << "Enter B value (0-255): ";
-                cin >> B;
+                cout << RED << "Unknown color name.\n" << RESET;
+                cout << YELLOW << "Enter color with R G B values: \n" << RESET;
+                cin >> R >> G >> B;
             }
         }
 
@@ -648,17 +726,49 @@ public:
         cin >> Thickness;
     }
 
-    void apply() override 
+    void apply() override
     {
         int width = image.width;
         int height = image.height;
 
-        if (isDecorative == false) 
+        if (!isDecorative) {
+            for (int i = 0; i < width; i++) {
+                for (int t = 0; t < Thickness; t++) {
+                    image(i, t, 0) = R;
+                    image(i, t, 1) = G;
+                    image(i, t, 2) = B;
+                }
+            }
+            for (int i = 0; i < width; i++) {
+                for (int t = 0; t < Thickness; t++) {
+                    image(i, height - 1 - t, 0) = R;
+                    image(i, height - 1 - t, 1) = G;
+                    image(i, height - 1 - t, 2) = B;
+                }
+            }
+            for (int i = 0; i < height; i++) {
+                for (int t = 0; t < Thickness; t++) {
+                    image(t, i, 0) = R;
+                    image(t, i, 1) = G;
+                    image(t, i, 2) = B;
+                }
+            }
+            for (int i = 0; i < height; i++) {
+                for (int t = 0; t < Thickness; t++) {
+                    image(width - 1 - t, i, 0) = R;
+                    image(width - 1 - t, i, 1) = G;
+                    image(width - 1 - t, i, 2) = B;
+                }
+            }
+        }
+           
+        else
         {
-            for (int i = 0; i < width; i++) 
-            {
-                for (int t = 0; t < Thickness; t++) 
-                {
+            RGB inner = { 255, 255, 255 }; 
+            int outerThickness = Thickness;
+            int innerThickness = Thickness / 2;
+            for (int i = 0; i < width; i++) {
+                for (int t = 0; t < outerThickness; t++) {
                     image(i, t, 0) = R;
                     image(i, t, 1) = G;
                     image(i, t, 2) = B;
@@ -666,7 +776,7 @@ public:
             }
             for (int i = 0; i < width; i++) 
             {
-                for (int t = 0; t < Thickness; t++) 
+                for (int t = 0; t < outerThickness; t++) 
                 {
                     image(i, height - 1 - t, 0) = R;
                     image(i, height - 1 - t, 1) = G;
@@ -675,8 +785,7 @@ public:
             }
             for (int i = 0; i < height; i++) 
             {
-                for (int t = 0; t < Thickness; t++) 
-                {
+                for (int t = 0; t < outerThickness; t++) {
                     image(t, i, 0) = R;
                     image(t, i, 1) = G;
                     image(t, i, 2) = B;
@@ -684,20 +793,53 @@ public:
             }
             for (int i = 0; i < height; i++) 
             {
-                for (int t = 0; t < Thickness; t++) 
-                {
+                for (int t = 0; t < outerThickness; t++) {
                     image(width - 1 - t, i, 0) = R;
                     image(width - 1 - t, i, 1) = G;
                     image(width - 1 - t, i, 2) = B;
                 }
             }
+            for (int i = outerThickness; i < width - outerThickness; i++) 
+            {
+                for (int t = 0; t < innerThickness; t++) {
+                    image(i, outerThickness + t, 0) = inner.R;
+                    image(i, outerThickness + t, 1) = inner.G;
+                    image(i, outerThickness + t, 2) = inner.B;
+                }
+            }
+            for (int i = outerThickness; i < width - outerThickness; i++) 
+            {
+                for (int t = 0; t < innerThickness; t++) {
+                    image(i, height - outerThickness - 1 - t, 0) = inner.R;
+                    image(i, height - outerThickness - 1 - t, 1) = inner.G;
+                    image(i, height - outerThickness - 1 - t, 2) = inner.B;
+                }
+            }
+            for (int i = outerThickness; i < height - outerThickness; i++) 
+            {
+                for (int t = 0; t < innerThickness; t++) 
+                {
+                    image(outerThickness + t, i, 0) = inner.R;
+                    image(outerThickness + t, i, 1) = inner.G;
+                    image(outerThickness + t, i, 2) = inner.B;
+                }
+            }
+            for (int i = outerThickness; i < height - outerThickness; i++) 
+            {
+                for (int t = 0; t < innerThickness; t++) 
+                {
+                    image(width - outerThickness - 1 - t, i, 0) = inner.R;
+                    image(width - outerThickness - 1 - t, i, 1) = inner.G;
+                    image(width - outerThickness - 1 - t, i, 2) = inner.B;
+                }
+            }
         }
-        else 
-        {
-            // Decorative frame 
-        }
+
+        
     }
 };
+
+
 
 
 // ======================================================================================================
@@ -725,7 +867,7 @@ public:
         // cout << "\nSelect by typing the number of the operation:\n";
 
         // cout << "1. Load an image to work on.\n";
-        std::cout << RESET << GREEN << "[L] Load Image\n";
+        std::cout << RESET << GREEN << "[l] Load Image\n";
         if (fileLoaded)
         {
             // cout << "Filters\n";
@@ -741,7 +883,7 @@ public:
             }
 
             cout << "\t[s] Save the Image.\n";
-            cout << "\t[u] Undo \t [r] Redo\n"  ;
+            cout << "\t[u] Undo \t [r] Redo\n";
         }
         // cout << "0. Exit.\n";
         std::cout << RESET << RED << "[0] Exit\n" << RESET;
@@ -806,7 +948,7 @@ public:
         cin >> imgName;
 
         if (!fs::exists("output")) fs::create_directory("output");
-        img.saveImage(("output/"+imgName));
+        img.saveImage(("output/" + imgName));
         cout << GREEN << "Your image has been saved successfully!";
 
         /*
@@ -871,7 +1013,8 @@ int main()
 {
     CurrentImage currentImage;
 
-    unordered_map<string, shared_ptr<Filter>> filters = {
+    unordered_map<string, shared_ptr<Filter>> filters =
+    {
         {GreyFilter::getId(),make_shared<GreyFilter>(currentImage.img)},
         {WBFilter::getId(),make_shared<WBFilter>(currentImage.img)},
         {InvertFilter::getId(),make_shared<InvertFilter>(currentImage.img)},
@@ -884,10 +1027,10 @@ int main()
         {TVFilter::getId(),make_shared<TVFilter>(currentImage.img) } ,
         {SkewingFilter::getId(),make_shared<SkewingFilter>(currentImage.img)},
         {ResizeFiter::getId(),make_shared<ResizeFiter>(currentImage.img)},
+        {BlurFilter::getId(),make_shared<BlurFilter>(currentImage.img)},
     };
 
     Menu menu(filters);
-
     menu.welcomeMsg();
     while (menu.getIsActive())
     {
@@ -910,7 +1053,8 @@ int main()
         {
             menu.setIsActive(false);
         }
-        else {
+        else
+        {
             filters[menu.getResponse()]->getNeeds();
             filters[menu.getResponse()]->apply();
             currentImage.currennt_img();
@@ -918,4 +1062,5 @@ int main()
     }
 
     return 0;
+     
 }
