@@ -81,7 +81,7 @@ class Horizontal_skewFilter : public Filter
 public :
     Horizontal_skewFilter(Image& img) : Filter(img) {};
     string getName() { return "Horizontal Skew"; };
-    static string getId() { return "20"; };
+    static string getId() { return "19"; };
     void apply()
     {
         try 
@@ -129,7 +129,7 @@ class Old_TvFilter : public Filter
 public : 
     Old_TvFilter(Image& img) : Filter(img) {};
     string getName() { return "Old Tv"; };
-    static string getId() { return "17"; };
+    static string getId() { return "16"; };
     void apply() override
     {
         try {
@@ -157,7 +157,7 @@ class GreyFilter : public Filter
 public:
     GreyFilter(Image& img) : Filter(img) {};
     string getName() { return "Grey Scale"; };
-    static string getId() { return "2"; };
+    static string getId() { return "1"; };
     void apply() override
     {
         try
@@ -196,7 +196,7 @@ class WBFilter : public Filter
 public:
     WBFilter(Image& img) : Filter(img) {};
     string getName() { return "White and Black"; };
-    static string getId() { return "3"; };
+    static string getId() { return "2"; };
     void apply() override
     {
         for (int i = 0; i < image.width; i++)
@@ -229,7 +229,7 @@ class MergeFilter : public Filter
 public:
     MergeFilter(Image& img) : Filter(img) {};
     string getName() { return "Merge"; };
-    static string getId() { return "5"; };
+    static string getId() { return "4"; };
 
     void getNeeds() override {
         cout << "Enter the image's name: ";
@@ -341,7 +341,7 @@ class FlipFilter : public Filter
 public:
     FlipFilter(Image& img) : Filter(img) {};
     string getName() { return "Flip"; };
-    static string getId() { return "6"; };
+    static string getId() { return "5"; };
 
     void getNeeds() override
     {
@@ -415,7 +415,7 @@ public:
         }
     }
     string getName() { return "Invert"; };
-    static string getId() { return "4"; };
+    static string getId() { return "3"; };
 
     void getNeeds() override {};
 
@@ -427,7 +427,7 @@ class RotateFilter : public Filter
 public:
     RotateFilter(Image& img) : Filter(img) {};
     string getName() { return "Rotate"; };
-    static string getId() { return "7"; };
+    static string getId() { return "6"; };
 
     void apply() override
     {
@@ -495,7 +495,7 @@ class BrightnessFilter : public Filter
 public:
     BrightnessFilter(Image& img) : Filter(img) {};
     string getName() { return "Brightness"; };
-    static string getId() { return "8"; };
+    static string getId() { return "7"; };
 
     void apply() override {
         cout << "here is: " << value << '\n';
@@ -531,7 +531,7 @@ public:
         cin >> dimensions[0] >> dimensions[1];
     }
     string getName() { return "Crop"; };
-    static string getId() { return "9"; };
+    static string getId() { return "8"; };
 
     void apply() override {
         Image croppedImage(dimensions[0], dimensions[1]);
@@ -561,7 +561,7 @@ public:
     FrameFilter(Image& img) : Filter(img), R(0), G(0), B(0), Thickness(1), isDecorative(false) {};
 
     string getName() { return "Frame"; }
-    static string getId() { return "12"; }
+    static string getId() { return "11"; }
 
     void getNeeds() override {
         cout << "Choose frame type:\n";
