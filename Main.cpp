@@ -655,8 +655,8 @@ class OilPaintingFilter : public Filter {
 public:
     OilPaintingFilter(Image& img) :Filter(img) {};
     void getNeeds() override {
-        cout << "How wide should the brush strokes be? (3-7): ";
-        cin >> radius;
+        // cout << "How wide should the brush strokes be? (3-7): ";
+        // cin >> radius;
 
         cout << "How detailed should the painting look? (10-30): ";
         cin >> intensityLevels;
