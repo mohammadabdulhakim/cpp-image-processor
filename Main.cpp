@@ -649,15 +649,12 @@ public:
 };
 
 class OilPaintingFilter : public Filter {
-    int radius;
+protected:
     int intensityLevels;
 
 public:
     OilPaintingFilter(Image& img) :Filter(img) {};
     void getNeeds() override {
-        // cout << "How wide should the brush strokes be? (3-7): ";
-        // cin >> radius;
-
         cout << "How detailed should the painting look? (10-30): ";
         cin >> intensityLevels;
     }
@@ -677,11 +674,31 @@ public:
 
                     image(x,y,k) = newIntensity;
                 }
-/*
-                vector<int> intensityCount;
-                vector<int> avgR;
-                vector<int> avgG;
-                vector<int> avgB;
+            }
+        }
+    }
+};
+
+class PaintingFilter: public OilPaintingFilter {
+     int radius;
+
+    public:
+    PaintingFilter (Image &img): OilPaintingFilter(img) {};
+        void getNeeds() override {
+            cout << "How wide should the brush strokes be? (3-7) (2 is recommended): ";
+            cin >> radius;
+            OilPaintingFilter::getNeeds();
+        }
+        string getName() { return "Painting"; };
+        static string getId() { return "30"; };
+
+    void apply() override {
+        for (int x = 0; x < image.width; x++) {
+            for (int y = 0; y < image.height; y++) {
+                vector<int> intensityCount(intensityLevels,0);
+                vector<int> avgR (intensityLevels,0);
+                vector<int> avgG (intensityLevels,0);
+                vector<int> avgB (intensityLevels,0);
 
                 int count = 0;
                 for (int ny = y-radius ; ny <= (y+radius); ny++ ) {
@@ -692,7 +709,10 @@ public:
                             int g = image(nx,ny,1);
                             int b = image(nx,ny,2);
 
-                            int binIndex = ((r+g+b/3.0f) * intensityLevels) / 255.0f;
+                            int intensity = (r+g+b)/3;
+
+                            int binIndex = (intensity * (intensityLevels-1)) / 255;
+
                             intensityCount[binIndex]++;
                             avgR[binIndex] += r;
                             avgG[binIndex] += g;
@@ -700,11 +720,27 @@ public:
                         }
                     }
                 }
-*/
+
+                int maxBin = 0;
+                int maxCount = 0;
+                for (int i = 0; i < intensityLevels; i++) {
+                    if (maxCount < intensityCount[i]) {
+                        maxBin = i;
+                        maxCount = intensityCount[i];
+                    }
+                }
+
+                if (maxCount) { // I mean maxCount > 0; but logically if maxCount was not zero then it is a true value;
+                    image(x,y,0) = avgR[maxBin]/maxCount;
+                    image(x,y,1) = avgG[maxBin]/maxCount;
+                    image(x,y,2) = avgB[maxBin]/maxCount;
+                }
             }
         }
     }
+
 };
+
 
 struct RGB {
     int R, G, B;
@@ -1095,6 +1131,7 @@ int main()
         {ResizeFilter::getId(),make_shared<ResizeFilter>(currentImage.img)},
         {BlurFilter::getId(),make_shared<BlurFilter>(currentImage.img)},
         {OilPaintingFilter::getId(),make_shared<OilPaintingFilter>(currentImage.img)},
+        {PaintingFilter::getId(),make_shared<PaintingFilter>(currentImage.img)},
     };
 
     Menu menu(filters);
