@@ -58,22 +58,22 @@ public:
 
         return output;
     }
-    static void resizeImage(Image &img, int newW, int newH) {
+    static void resizeImage(Image& img, int newW, int newH) {
         Image resizedImage(newW, newH);
 
         double xRatio = static_cast<double>(img.width) / newW;
         double yRatio = static_cast<double>(img.height) / newH;
 
         for (int x = 0; x < newW; x++) {
-            for (int y = 0; y<newH; y++) {
-                int nearestX = static_cast<int>(x*xRatio);
-                int nearestY = static_cast<int>(y*yRatio);
+            for (int y = 0; y < newH; y++) {
+                int nearestX = static_cast<int>(x * xRatio);
+                int nearestY = static_cast<int>(y * yRatio);
 
                 nearestX = min(nearestX, img.width - 1);
                 nearestY = min(nearestY, img.height - 1);
 
-                for (int k=0; k<img.channels; k++) {
-                    resizedImage(x,y,k) = img(nearestX, nearestY, k);
+                for (int k = 0; k < img.channels; k++) {
+                    resizedImage(x, y, k) = img(nearestX, nearestY, k);
                 }
             }
         }
@@ -82,16 +82,139 @@ public:
     }
     // static string getId() {};
 };
+class MirrorFilter : public Filter
+{
+    char op; 
+public :
+    MirrorFilter(Image& img) : Filter(img) {};
+    string getName() { return "Mirror"; };
+    static string getId() { return "m"; };
+    void getNeeds() override 
+    {
+        cout << "Horizontal Mirror(h) or Vertical Mirror(v) : "; cin >> op; 
+    };
+    void HorizontalMirror(Image&image)
+    {
+        for (int i = 0; i < image.height; i++) 
+        {
+            for (int j = 0; j < image.width / 2; j++) 
+            {
+                swap(image(j, i, 0), image(image.width - j - 1, i, 0)); 
+                swap(image(j,i , 1), image(image.width - j - 1, i, 1)); 
+                swap(image(j, i, 2), image(image.width - j - 1, i, 2)); 
+            }
+        }
 
+    }
+    void VerticalVMirror(Image& image)
+    {
+        for (int i = 0; i < image.height / 2 ; i++)
+        {
+            for (int j = 0; j < image.width; j++)
+            {
+                swap(image(i, j, 0), image(i, image.height - i - 1 , 0));
+                swap(image(i, j, 1), image(i, image.height - i - 1 , 1));
+                swap(image(i, j, 2), image(i, image.height - i - 1,  2));
+            }
+        }
+    }
+    void apply() override
+    {
+        switch (op)
+        {
+        case 'h' :
+            HorizontalMirror(image);
+            break;
+        case 'v':
+            VerticalVMirror(image);
+            break; 
+        default:
+            cout << RED << "Invalid option" << RESET << endl ; 
+        }
+    };
+
+};
+
+class SunlightFilter : public Filter
+{
+ public:
+    SunlightFilter(Image& img) : Filter(img) {};
+    string getName() { return "Sunlight"; };
+    static string getId() { return "31"; };
+    void apply()
+    {
+        for (int i = 0; i < image.width; i++)
+        {
+            for (int j = 0; j < image.height; j++)
+            {
+                double r = 1.1 * image(i, j, 0);
+                if (r > 255)
+                {
+                    r = 255;
+                }
+                image(i, j, 0) = r;
+                double g = 1.2 * image(i, j, 1);
+                if (g > 255)
+                {
+                    g = 255;
+                }
+                image(i, j, 1) = g;
+                double b = 0.7 * image(i, j, 2);
+                if (b < 0)
+                {
+                    b =  0;
+                }
+                image(i, j, 2) = b;
+            }
+        }
+    }
+    void getNeeds() override {};
+};
+class NightFilter : public Filter 
+{
+public :
+    NightFilter(Image& img) : Filter(img) {};
+    string getName() { return "Night"; };
+    static string getId() { return "n"; };
+    void apply()
+    {
+        for (int i = 0; i < image.width; i++)
+        {
+            for (int j = 0; j < image.height; j++)
+            {
+                double r = 1.4 * image(i, j, 0);
+                if (r > 255)
+                {
+                    r = 255; 
+                }
+                image(i, j, 0) = r; 
+                double g = 0.7 * image(i, j, 1);
+                if (g < 0)
+                {
+                    g = 0; 
+                }
+                image(i, j, 1) = g;
+                double b = 1.6 * image(i, j, 2);
+                if (b > 255)
+                {
+                    b = 255;
+                }
+                image(i, j, 2) = b;
+            }
+        }
+
+    }
+    void getNeeds() override {};
+};
 class BlurFilter : public Filter {
-    int Radius ;
+    int Radius;
 
 public:
     BlurFilter(Image& img) : Filter(img) {};
     string getName() { return "Blur"; };
     static string getId() { return "12"; };
 
-    void Prefix_sum(Image&image ,vector<vector<ll>>&prefixR , vector<vector<ll>>& prefixG , vector<vector<ll>>& prefixB)
+    void Prefix_sum(Image& image, vector<vector<ll>>& prefixR, vector<vector<ll>>& prefixG, vector<vector<ll>>& prefixB)
     {
         for (int i = 1; i <= image.width; i++)
         {
@@ -150,7 +273,7 @@ public:
             std::cerr << "Error: " << e.what() << std::endl;
         }
     }
-    void getNeeds() override 
+    void getNeeds() override
     {
         cout << "Enter strenght of blur : "; cin >> Radius;
     }
@@ -208,7 +331,7 @@ public:
 
 class TVFilter : public Filter
 {
-public : 
+public:
     TVFilter(Image& img) : Filter(img) {};
     string getName() { return "Old TV"; };
     static string getId() { return "15"; };
@@ -665,53 +788,53 @@ public:
         for (int x = 0; x < image.width; x++) {
             for (int y = 0; y < image.height; y++) {
 
-                for(int k = 0; k < image.channels; k++){
-                    int intensity = image(x,y,k);
+                for (int k = 0; k < image.channels; k++) {
+                    int intensity = image(x, y, k);
                     int binIndex = (intensity * intensityLevels) / 255;
-                    if(binIndex >= intensityLevels) binIndex = intensityLevels-1;
+                    if (binIndex >= intensityLevels) binIndex = intensityLevels - 1;
 
-                    int newIntensity = (binIndex * 255) / (intensityLevels-1);
+                    int newIntensity = (binIndex * 255) / (intensityLevels - 1);
 
-                    image(x,y,k) = newIntensity;
+                    image(x, y, k) = newIntensity;
                 }
             }
         }
     }
 };
 
-class PaintingFilter: public OilPaintingFilter {
-     int radius;
+class PaintingFilter : public OilPaintingFilter {
+    int radius;
 
-    public:
-    PaintingFilter (Image &img): OilPaintingFilter(img) {};
-        void getNeeds() override {
-            cout << "How wide should the brush strokes be? (3-7) (2 is recommended): ";
-            cin >> radius;
-            OilPaintingFilter::getNeeds();
-        }
-        string getName() { return "Painting"; };
-        static string getId() { return "30"; };
+public:
+    PaintingFilter(Image& img) : OilPaintingFilter(img) {};
+    void getNeeds() override {
+        cout << "How wide should the brush strokes be? (3-7) (2 is recommended): ";
+        cin >> radius;
+        OilPaintingFilter::getNeeds();
+    }
+    string getName() { return "Painting"; };
+    static string getId() { return "30"; };
 
     void apply() override {
         for (int x = 0; x < image.width; x++) {
             for (int y = 0; y < image.height; y++) {
-                vector<int> intensityCount(intensityLevels,0);
-                vector<int> avgR (intensityLevels,0);
-                vector<int> avgG (intensityLevels,0);
-                vector<int> avgB (intensityLevels,0);
+                vector<int> intensityCount(intensityLevels, 0);
+                vector<int> avgR(intensityLevels, 0);
+                vector<int> avgG(intensityLevels, 0);
+                vector<int> avgB(intensityLevels, 0);
 
                 int count = 0;
-                for (int ny = y-radius ; ny <= (y+radius); ny++ ) {
-                    for (int nx = x-radius; nx <= (x+radius); nx++ ) {
-                        if (isInBound(nx,ny)) {
+                for (int ny = y - radius; ny <= (y + radius); ny++) {
+                    for (int nx = x - radius; nx <= (x + radius); nx++) {
+                        if (isInBound(nx, ny)) {
                             count++;
-                            int r = image(nx,ny,0);
-                            int g = image(nx,ny,1);
-                            int b = image(nx,ny,2);
+                            int r = image(nx, ny, 0);
+                            int g = image(nx, ny, 1);
+                            int b = image(nx, ny, 2);
 
-                            int intensity = (r+g+b)/3;
+                            int intensity = (r + g + b) / 3;
 
-                            int binIndex = (intensity * (intensityLevels-1)) / 255;
+                            int binIndex = (intensity * (intensityLevels - 1)) / 255;
 
                             intensityCount[binIndex]++;
                             avgR[binIndex] += r;
@@ -731,9 +854,9 @@ class PaintingFilter: public OilPaintingFilter {
                 }
 
                 if (maxCount) { // I mean maxCount > 0; but logically if maxCount was not zero then it is a true value;
-                    image(x,y,0) = avgR[maxBin]/maxCount;
-                    image(x,y,1) = avgG[maxBin]/maxCount;
-                    image(x,y,2) = avgB[maxBin]/maxCount;
+                    image(x, y, 0) = avgR[maxBin] / maxCount;
+                    image(x, y, 1) = avgG[maxBin] / maxCount;
+                    image(x, y, 2) = avgB[maxBin] / maxCount;
                 }
             }
         }
@@ -741,36 +864,37 @@ class PaintingFilter: public OilPaintingFilter {
 
 };
 
-class InfraredFilter: public Filter {
-     int radius;
+class InfraredFilter : public Filter {
+    int radius;
 
-    public:
-    InfraredFilter (Image &img): Filter(img) {};
-        void getNeeds() override {};
-        string getName() { return "Infrared"; };
-        static string getId() { return "17"; };
+public:
+    InfraredFilter(Image& img) : Filter(img) {};
+    void getNeeds() override {};
+    string getName() { return "Infrared"; };
+    static string getId() { return "17"; };
 
     void apply() override {
         for (int x = 0; x < image.width; x++) {
             for (int y = 0; y < image.height; y++) {
                 int redChannel = 0;
-                for (int k = 0; k< image.channels; k++) {
-                    redChannel += image(x,y,k);
+                for (int k = 0; k < image.channels; k++) {
+                    redChannel += image(x, y, k);
                 }
                 redChannel /= image.channels;
 
-                image(x,y,0) = 255;
-                image(x,y,1) = 255-redChannel;
-                image(x,y,2) = 255-redChannel;
+                image(x, y, 0) = 255;
+                image(x, y, 1) = 255 - redChannel;
+                image(x, y, 2) = 255 - redChannel;
             }
         }
     }
 };
 
-class BloodyFilter: public Filter {
+class BloodyFilter : public Filter {
+    int radius;
 
 public:
-    BloodyFilter (Image &img): Filter(img) {};
+    BloodyFilter(Image& img) : Filter(img) {};
     void getNeeds() override {};
     string getName() { return "Bloody"; };
     static string getId() { return "31"; };
@@ -779,24 +903,23 @@ public:
         for (int x = 0; x < image.width; x++) {
             for (int y = 0; y < image.height; y++) {
                 int redChannel = 0;
-                for (int k = 0; k< image.channels; k++) {
-                    redChannel += image(x,y,k);
+                for (int k = 0; k < image.channels; k++) {
+                    redChannel += image(x, y, k);
                 }
                 redChannel /= image.channels;
 
-                image(x,y,0) = redChannel;
-                image(x,y,1) = 0;
-                image(x,y,2) = 0;
+                image(x, y, 0) = redChannel;
+                image(x, y, 1) = 0;
+                image(x, y, 2) = 0;
             }
         }
     }
 
 };
-
-class SkyFilter: public Filter {
+class SkyFilter : public Filter {
 
 public:
-    SkyFilter (Image &img): Filter(img) {};
+    SkyFilter(Image& img) : Filter(img) {};
     void getNeeds() override {};
     string getName() { return "Sky"; };
     static string getId() { return "32"; };
@@ -805,24 +928,24 @@ public:
         for (int x = 0; x < image.width; x++) {
             for (int y = 0; y < image.height; y++) {
                 int blueChannel = 0;
-                for (int k = 0; k< image.channels; k++) {
-                    blueChannel += image(x,y,k);
+                for (int k = 0; k < image.channels; k++) {
+                    blueChannel += image(x, y, k);
                 }
                 blueChannel /= image.channels;
 
-                image(x,y,0) = 0;
-                image(x,y,1) = blueChannel/2;
-                image(x,y,2) = blueChannel;
+                image(x, y, 0) = 0;
+                image(x, y, 1) = blueChannel / 2;
+                image(x, y, 2) = blueChannel;
             }
         }
     }
 
 };
 
-class GrassFilter: public Filter {
+class GrassFilter : public Filter {
 
 public:
-    GrassFilter (Image &img): Filter(img) {};
+    GrassFilter(Image& img) : Filter(img) {};
     string getName() { return "Grass"; };
     static string getId() { return "33"; };
 
@@ -830,21 +953,21 @@ public:
         for (int x = 0; x < image.width; x++) {
             for (int y = 0; y < image.height; y++) {
                 int intensity = 0;
-                for (int k = 0; k< image.channels; k++) {
-                    intensity += image(x,y,k);
+                for (int k = 0; k < image.channels; k++) {
+                    intensity += image(x, y, k);
                 }
                 intensity /= image.channels;
 
-                image(x,y,0) = 0;
-                image(x,y,1) = intensity;
-                image(x,y,2) = 0;
+                image(x, y, 0) = 0;
+                image(x, y, 1) = intensity;
+                image(x, y, 2) = 0;
             }
         }
+         
     }
+    void getNeeds() override {};
 
 };
-
-
 
 struct RGB {
     int R, G, B;
@@ -966,10 +1089,10 @@ public:
                 }
             }
         }
-           
+
         else
         {
-            RGB inner = { 255, 255, 255 }; 
+            RGB inner = { 255, 255, 255 };
             int outerThickness = Thickness;
             int innerThickness = Thickness / 2;
             for (int i = 0; i < width; i++) {
@@ -979,16 +1102,16 @@ public:
                     image(i, t, 2) = B;
                 }
             }
-            for (int i = 0; i < width; i++) 
+            for (int i = 0; i < width; i++)
             {
-                for (int t = 0; t < outerThickness; t++) 
+                for (int t = 0; t < outerThickness; t++)
                 {
                     image(i, height - 1 - t, 0) = R;
                     image(i, height - 1 - t, 1) = G;
                     image(i, height - 1 - t, 2) = B;
                 }
             }
-            for (int i = 0; i < height; i++) 
+            for (int i = 0; i < height; i++)
             {
                 for (int t = 0; t < outerThickness; t++) {
                     image(t, i, 0) = R;
@@ -996,7 +1119,7 @@ public:
                     image(t, i, 2) = B;
                 }
             }
-            for (int i = 0; i < height; i++) 
+            for (int i = 0; i < height; i++)
             {
                 for (int t = 0; t < outerThickness; t++) {
                     image(width - 1 - t, i, 0) = R;
@@ -1004,7 +1127,7 @@ public:
                     image(width - 1 - t, i, 2) = B;
                 }
             }
-            for (int i = outerThickness; i < width - outerThickness; i++) 
+            for (int i = outerThickness; i < width - outerThickness; i++)
             {
                 for (int t = 0; t < innerThickness; t++) {
                     image(i, outerThickness + t, 0) = inner.R;
@@ -1012,7 +1135,7 @@ public:
                     image(i, outerThickness + t, 2) = inner.B;
                 }
             }
-            for (int i = outerThickness; i < width - outerThickness; i++) 
+            for (int i = outerThickness; i < width - outerThickness; i++)
             {
                 for (int t = 0; t < innerThickness; t++) {
                     image(i, height - outerThickness - 1 - t, 0) = inner.R;
@@ -1020,18 +1143,18 @@ public:
                     image(i, height - outerThickness - 1 - t, 2) = inner.B;
                 }
             }
-            for (int i = outerThickness; i < height - outerThickness; i++) 
+            for (int i = outerThickness; i < height - outerThickness; i++)
             {
-                for (int t = 0; t < innerThickness; t++) 
+                for (int t = 0; t < innerThickness; t++)
                 {
                     image(outerThickness + t, i, 0) = inner.R;
                     image(outerThickness + t, i, 1) = inner.G;
                     image(outerThickness + t, i, 2) = inner.B;
                 }
             }
-            for (int i = outerThickness; i < height - outerThickness; i++) 
+            for (int i = outerThickness; i < height - outerThickness; i++)
             {
-                for (int t = 0; t < innerThickness; t++) 
+                for (int t = 0; t < innerThickness; t++)
                 {
                     image(width - outerThickness - 1 - t, i, 0) = inner.R;
                     image(width - outerThickness - 1 - t, i, 1) = inner.G;
@@ -1040,7 +1163,7 @@ public:
             }
         }
 
-        
+
     }
 };
 
@@ -1069,14 +1192,11 @@ public:
 
     void showMenuOptions(bool fileLoaded)
     {
-        // cout << "\nSelect by typing the number of the operation:\n";
-
-        // cout << "1. Load an image to work on.\n";
+       
         std::cout << RESET << GREEN << "[l] Load Image\n";
         if (fileLoaded)
         {
-            // cout << "Filters\n";
-            // std::cout << "\n\n";
+            
             std::cout << CYAN << "=====================\n";
             std::cout << RESET << BOLD << "    Choose Filters    \n";
             std::cout << RESET << CYAN << "======================\n" << RESET;
@@ -1120,32 +1240,34 @@ public:
 
 class CurrentImage
 {
-    bool isLoaded = false; // default false
-    stack<Image> memory;
+    bool isLoaded = false;
+    stack<Image> Undo;
+    stack<Image> Redo;
 
 public:
     Image img;
+
     void currennt_img()
     {
-        memory.push(img);
+        Undo.push(img);
+        Redo = stack<Image>();
     }
+
     void load()
     {
         string imgName;
-        // cout << "Enter the image's name: ";
-        // cin >> imgName;
-        std::cout << CYAN << "Please Enter image name you want to apply filter on: ";
-        std::cout << RESET << GREEN << BOLD;
+        cout << CYAN << "Please enter image name you want to apply filter on: " << RESET << GREEN << BOLD;
         cin.ignore();
         getline(cin, imgName);
-        std::cout << "\n\n" << RESET;
+        cout << "\n\n" << RESET;
 
         img.loadNewImage(getImagePath(imgName));
         setIsLoaded(true);
-        memory = stack<Image>();
-        memory.push(img);
-    };
 
+        Undo = stack<Image>();
+        Redo = stack<Image>();
+        Undo.push(img);
+    }
 
     void save()
     {
@@ -1153,58 +1275,42 @@ public:
         string imgName;
         cin >> imgName;
 
-        if (!fs::exists("output")) fs::create_directory("output");
-        img.saveImage(("output/" + imgName));
-        cout << GREEN << "Your image has been saved successfully!";
+        if (!fs::exists("output"))
+            fs::create_directory("output");
 
-        /*
-        cout << CYAN << "Enter folder name to save image : " << RESET;
-        string folderPath;
-        cin >> folderPath;
-
-        if (!fs::exists(folderPath))
-        {
-            try {
-                fs::create_directories(folderPath);
-                cout << GREEN << "Folder created successfully: " << RESET << folderPath << endl;
-            }
-            catch (const exception& e) {
-                cerr << RED << "Error creating folder: " << e.what() << RESET << endl;
-                return;
-            }
-        }
-        string fullPath = folderPath + "/" + imgName;
-        try {
-            bool fileExists = fs::exists(fullPath);
-            img.saveImage(fullPath);
-
-            if (fileExists) {
-                cout << GREEN << "Image saved successfully in existing file: "
-                    << RESET << fullPath << endl;
-            }
-            else {
-                cout << GREEN << "File created successfully: "
-                    << RESET << fullPath << endl;
-            }
-        }
-        catch (const exception& e) {
-            cerr << RED << "Error saving file: " << e.what() << RESET << endl;
-        }
-        */
+        img.saveImage("output/" + imgName);
+        cout << GREEN << "Your image has been saved successfully!\n" << RESET;
     }
+
     void undo()
     {
-        if (memory.size() > 1)
+        if (Undo.size() > 1)
         {
-            memory.pop();
-            img = memory.top();
+            Undo.push(Undo.top());
+            Undo.pop();
+            img =Undo.top();
         }
         else
         {
-            cout << RED << "No more steps to undo." << RESET << endl;
+            cout << RED << "No more steps to undo.\n" << RESET;
         }
     }
-    bool getIsLoaded()
+
+    void redo()
+    {
+        if (!Redo.empty())
+        {
+            Undo.push(Redo.top());
+            img = Redo.top();
+            Redo.pop();
+        }
+        else
+        {
+            cout << RED << "No more steps to redo.\n" << RESET;
+        }
+    }
+
+    bool getIsLoaded() const
     {
         return isLoaded;
     }
@@ -1215,64 +1321,78 @@ public:
     }
 };
 
+// =============================================================
+
 int main()
 {
     CurrentImage currentImage;
 
-    unordered_map<string, shared_ptr<Filter>> filters =
-    {
-        {GreyFilter::getId(),make_shared<GreyFilter>(currentImage.img)},
-        {WBFilter::getId(),make_shared<WBFilter>(currentImage.img)},
-        {InvertFilter::getId(),make_shared<InvertFilter>(currentImage.img)},
-        {MergeFilter::getId(),make_shared<MergeFilter>(currentImage.img)},
-        {FlipFilter::getId(),make_shared<FlipFilter>(currentImage.img)},
-        {RotateFilter::getId(),make_shared<RotateFilter>(currentImage.img)},
-        {BrightnessFilter::getId(),make_shared<BrightnessFilter>(currentImage.img)},
-        {CropFiter::getId(),make_shared<CropFiter>(currentImage.img)},
-        {FrameFilter::getId(),make_shared<FrameFilter>(currentImage.img)},
-        {TVFilter::getId(),make_shared<TVFilter>(currentImage.img) } ,
-        {SkewingFilter::getId(),make_shared<SkewingFilter>(currentImage.img)},
-        {ResizeFilter::getId(),make_shared<ResizeFilter>(currentImage.img)},
-        {BlurFilter::getId(),make_shared<BlurFilter>(currentImage.img)},
-        {OilPaintingFilter::getId(),make_shared<OilPaintingFilter>(currentImage.img)},
-        {PaintingFilter::getId(),make_shared<PaintingFilter>(currentImage.img)},
-        {InfraredFilter::getId(),make_shared<InfraredFilter>(currentImage.img)},
-        {BloodyFilter::getId(),make_shared<BloodyFilter>(currentImage.img)},
+    unordered_map<string, shared_ptr<Filter>> filters = {
+        {GreyFilter::getId(), make_shared<GreyFilter>(currentImage.img)},
+        {WBFilter::getId(), make_shared<WBFilter>(currentImage.img)},
+        {InvertFilter::getId(), make_shared<InvertFilter>(currentImage.img)},
+        {MergeFilter::getId(), make_shared<MergeFilter>(currentImage.img)},
+        {FlipFilter::getId(), make_shared<FlipFilter>(currentImage.img)},
+        {RotateFilter::getId(), make_shared<RotateFilter>(currentImage.img)},
+        {BrightnessFilter::getId(), make_shared<BrightnessFilter>(currentImage.img)},
+        {CropFiter::getId(), make_shared<CropFiter>(currentImage.img)},
+        {FrameFilter::getId(), make_shared<FrameFilter>(currentImage.img)},
+        {TVFilter::getId(), make_shared<TVFilter>(currentImage.img)},
+        {SkewingFilter::getId(), make_shared<SkewingFilter>(currentImage.img)},
+        {ResizeFilter::getId(), make_shared<ResizeFilter>(currentImage.img)},
+        {BlurFilter::getId(), make_shared<BlurFilter>(currentImage.img)},
+        {OilPaintingFilter::getId(), make_shared<OilPaintingFilter>(currentImage.img)},
+        {PaintingFilter::getId(), make_shared<PaintingFilter>(currentImage.img)},
+        {InfraredFilter::getId(), make_shared<InfraredFilter>(currentImage.img)},
+        {BloodyFilter::getId(), make_shared<BloodyFilter>(currentImage.img)},
+        {NightFilter::getId(), make_shared<NightFilter>(currentImage.img)},
+        {SunlightFilter::getId(), make_shared<SunlightFilter>(currentImage.img)},
+        {MirrorFilter::getId(), make_shared<MirrorFilter>(currentImage.img)},
         {SkyFilter::getId(),make_shared<SkyFilter>(currentImage.img)},
-        {GrassFilter::getId(),make_shared<GrassFilter>(currentImage.img)},
+        {GrassFilter::getId(),make_shared<GrassFilter>(currentImage.img)}
     };
 
     Menu menu(filters);
     menu.welcomeMsg();
+
     while (menu.getIsActive())
     {
         menu.showMenuOptions(currentImage.getIsLoaded());
         menu.setResponse();
 
-        if (menu.getResponse() == "l")
+        string res = menu.getResponse();
+
+        if (res == "l")
         {
             currentImage.load();
         }
-        else if (menu.getResponse() == "s" && currentImage.getIsLoaded())
+        else if (res == "s" && currentImage.getIsLoaded())
         {
             currentImage.save();
         }
-        else if (menu.getResponse() == "u" && currentImage.getIsLoaded())
+        else if (res == "u" && currentImage.getIsLoaded())
         {
             currentImage.undo();
         }
-        else if (menu.getResponse() == "0")
+        else if (res == "r" && currentImage.getIsLoaded()) 
+        {
+            currentImage.redo();
+        }
+        else if (res == "0")
         {
             menu.setIsActive(false);
         }
+        else if (currentImage.getIsLoaded() && filters.count(res))
+        {
+            filters[res]->getNeeds();
+            filters[res]->apply();
+            currentImage.currennt_img();
+        }
         else
         {
-            filters[menu.getResponse()]->getNeeds();
-            filters[menu.getResponse()]->apply();
-            currentImage.currennt_img();
+            cout << RED << "Invalid option \n" << RESET;
         }
     }
 
     return 0;
-     
 }
