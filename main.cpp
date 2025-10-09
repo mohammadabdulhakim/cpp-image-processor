@@ -768,7 +768,6 @@ class InfraredFilter: public Filter {
 };
 
 class BloodyFilter: public Filter {
-    int radius;
 
 public:
     BloodyFilter (Image &img): Filter(img) {};
@@ -793,6 +792,58 @@ public:
     }
 
 };
+
+class SkyFilter: public Filter {
+
+public:
+    SkyFilter (Image &img): Filter(img) {};
+    void getNeeds() override {};
+    string getName() { return "Sky"; };
+    static string getId() { return "32"; };
+
+    void apply() override {
+        for (int x = 0; x < image.width; x++) {
+            for (int y = 0; y < image.height; y++) {
+                int blueChannel = 0;
+                for (int k = 0; k< image.channels; k++) {
+                    blueChannel += image(x,y,k);
+                }
+                blueChannel /= image.channels;
+
+                image(x,y,0) = 0;
+                image(x,y,1) = blueChannel/2;
+                image(x,y,2) = blueChannel;
+            }
+        }
+    }
+
+};
+
+class GrassFilter: public Filter {
+
+public:
+    GrassFilter (Image &img): Filter(img) {};
+    string getName() { return "Grass"; };
+    static string getId() { return "33"; };
+
+    void apply() override {
+        for (int x = 0; x < image.width; x++) {
+            for (int y = 0; y < image.height; y++) {
+                int intensity = 0;
+                for (int k = 0; k< image.channels; k++) {
+                    intensity += image(x,y,k);
+                }
+                intensity /= image.channels;
+
+                image(x,y,0) = 0;
+                image(x,y,1) = intensity;
+                image(x,y,2) = 0;
+            }
+        }
+    }
+
+};
+
 
 
 struct RGB {
@@ -1187,6 +1238,8 @@ int main()
         {PaintingFilter::getId(),make_shared<PaintingFilter>(currentImage.img)},
         {InfraredFilter::getId(),make_shared<InfraredFilter>(currentImage.img)},
         {BloodyFilter::getId(),make_shared<BloodyFilter>(currentImage.img)},
+        {SkyFilter::getId(),make_shared<SkyFilter>(currentImage.img)},
+        {GrassFilter::getId(),make_shared<GrassFilter>(currentImage.img)},
     };
 
     Menu menu(filters);
