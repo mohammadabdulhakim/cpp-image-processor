@@ -765,8 +765,35 @@ class InfraredFilter: public Filter {
             }
         }
     }
+};
+
+class BloodyFilter: public Filter {
+    int radius;
+
+public:
+    BloodyFilter (Image &img): Filter(img) {};
+    void getNeeds() override {};
+    string getName() { return "Bloody"; };
+    static string getId() { return "31"; };
+
+    void apply() override {
+        for (int x = 0; x < image.width; x++) {
+            for (int y = 0; y < image.height; y++) {
+                int redChannel = 0;
+                for (int k = 0; k< image.channels; k++) {
+                    redChannel += image(x,y,k);
+                }
+                redChannel /= image.channels;
+
+                image(x,y,0) = redChannel;
+                image(x,y,1) = 0;
+                image(x,y,2) = 0;
+            }
+        }
+    }
 
 };
+
 
 struct RGB {
     int R, G, B;
@@ -1159,6 +1186,7 @@ int main()
         {OilPaintingFilter::getId(),make_shared<OilPaintingFilter>(currentImage.img)},
         {PaintingFilter::getId(),make_shared<PaintingFilter>(currentImage.img)},
         {InfraredFilter::getId(),make_shared<InfraredFilter>(currentImage.img)},
+        {BloodyFilter::getId(),make_shared<BloodyFilter>(currentImage.img)},
     };
 
     Menu menu(filters);
