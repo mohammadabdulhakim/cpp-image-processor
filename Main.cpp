@@ -741,6 +741,32 @@ class PaintingFilter: public OilPaintingFilter {
 
 };
 
+class InfraredFilter: public Filter {
+     int radius;
+
+    public:
+    InfraredFilter (Image &img): Filter(img) {};
+        void getNeeds() override {};
+        string getName() { return "Infrared"; };
+        static string getId() { return "17"; };
+
+    void apply() override {
+        for (int x = 0; x < image.width; x++) {
+            for (int y = 0; y < image.height; y++) {
+                int redChannel = 0;
+                for (int k = 0; k< image.channels; k++) {
+                    redChannel += image(x,y,k);
+                }
+                redChannel /= image.channels;
+
+                image(x,y,0) = 255;
+                image(x,y,1) = 255-redChannel;
+                image(x,y,2) = 255-redChannel;
+            }
+        }
+    }
+
+};
 
 struct RGB {
     int R, G, B;
@@ -1132,6 +1158,7 @@ int main()
         {BlurFilter::getId(),make_shared<BlurFilter>(currentImage.img)},
         {OilPaintingFilter::getId(),make_shared<OilPaintingFilter>(currentImage.img)},
         {PaintingFilter::getId(),make_shared<PaintingFilter>(currentImage.img)},
+        {InfraredFilter::getId(),make_shared<InfraredFilter>(currentImage.img)},
     };
 
     Menu menu(filters);
