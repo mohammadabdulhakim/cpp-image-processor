@@ -51,6 +51,13 @@ public:
     virtual void apply() = 0;
     virtual void getNeeds() = 0;
     virtual string getName() = 0;
+    bool isInBound(int x = 0, int y = 0) {
+        bool output = true;
+        if (x < 0 || x >= image.width) output = false;
+        if (y < 0 || y >= image.height) output = false;
+
+        return output;
+    }
     static void resizeImage(Image &img, int newW, int newH) {
         Image resizedImage(newW, newH);
 
@@ -624,11 +631,11 @@ public:
     }
 };
 
-class ResizeFiter : public Filter {
+class ResizeFilter : public Filter {
     int dimensions[2]{ 100 };
 
 public:
-    ResizeFiter(Image& img) :Filter(img) {};
+    ResizeFilter(Image& img) :Filter(img) {};
     void getNeeds() override {
         cout << "Please enter the new dimensions of the image. (100 100): ";
         cin >> dimensions[0] >> dimensions[1];
@@ -638,6 +645,64 @@ public:
 
     void apply() override {
         resizeImage(image, dimensions[0], dimensions[1]);
+    }
+};
+
+class OilPaintingFilter : public Filter {
+    int radius;
+    int intensityLevels;
+
+public:
+    OilPaintingFilter(Image& img) :Filter(img) {};
+    void getNeeds() override {
+        // cout << "How wide should the brush strokes be? (3-7): ";
+        // cin >> radius;
+
+        cout << "How detailed should the painting look? (10-30): ";
+        cin >> intensityLevels;
+    }
+    string getName() { return "Oil Painting"; };
+    static string getId() { return "14"; };
+
+    void apply() override {
+        for (int x = 0; x < image.width; x++) {
+            for (int y = 0; y < image.height; y++) {
+
+                for(int k = 0; k < image.channels; k++){
+                    int intensity = image(x,y,k);
+                    int binIndex = (intensity * intensityLevels) / 255;
+                    if(binIndex >= intensityLevels) binIndex = intensityLevels-1;
+
+                    int newIntensity = (binIndex * 255) / (intensityLevels-1);
+
+                    image(x,y,k) = newIntensity;
+                }
+/*
+                vector<int> intensityCount;
+                vector<int> avgR;
+                vector<int> avgG;
+                vector<int> avgB;
+
+                int count = 0;
+                for (int ny = y-radius ; ny <= (y+radius); ny++ ) {
+                    for (int nx = x-radius; nx <= (x+radius); nx++ ) {
+                        if (isInBound(nx,ny)) {
+                            count++;
+                            int r = image(nx,ny,0);
+                            int g = image(nx,ny,1);
+                            int b = image(nx,ny,2);
+
+                            int binIndex = ((r+g+b/3.0f) * intensityLevels) / 255.0f;
+                            intensityCount[binIndex]++;
+                            avgR[binIndex] += r;
+                            avgG[binIndex] += g;
+                            avgB[binIndex] += b;
+                        }
+                    }
+                }
+*/
+            }
+        }
     }
 };
 
@@ -931,7 +996,8 @@ public:
         // cin >> imgName;
         std::cout << CYAN << "Please Enter image name you want to apply filter on: ";
         std::cout << RESET << GREEN << BOLD;
-        std::cin >> imgName;
+        cin.ignore();
+        getline(cin, imgName);
         std::cout << "\n\n" << RESET;
 
         img.loadNewImage(getImagePath(imgName));
@@ -1026,8 +1092,9 @@ int main()
         {FrameFilter::getId(),make_shared<FrameFilter>(currentImage.img)},
         {TVFilter::getId(),make_shared<TVFilter>(currentImage.img) } ,
         {SkewingFilter::getId(),make_shared<SkewingFilter>(currentImage.img)},
-        {ResizeFiter::getId(),make_shared<ResizeFiter>(currentImage.img)},
+        {ResizeFilter::getId(),make_shared<ResizeFilter>(currentImage.img)},
         {BlurFilter::getId(),make_shared<BlurFilter>(currentImage.img)},
+        {OilPaintingFilter::getId(),make_shared<OilPaintingFilter>(currentImage.img)},
     };
 
     Menu menu(filters);
