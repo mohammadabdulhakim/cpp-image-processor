@@ -44,7 +44,6 @@ struct RGB {
     int R, G, B;
 };
 
-
 class Filter
 {
 protected:
@@ -59,24 +58,24 @@ public:
     virtual string getName() = 0;
 
     double computeThreshold() {
-        vector<int> intensities(image.width*image.height);
+        vector<int> intensities(image.width * image.height);
 
         for (int x = 0; x < image.width; x++) {
-            for (int y=0; y < image.height; y++) {
+            for (int y = 0; y < image.height; y++) {
                 int r = image(x, y, 0);
                 int g = image(x, y, 1);
                 int b = image(x, y, 2);
-                intensities.push_back(((r+g+b)/3));
+                intensities.push_back(((r + g + b) / 3));
             }
         }
 
         double sum = 0;
-        for (int &val: intensities) sum += val;
+        for (int& val : intensities) sum += val;
 
-        double mean = sum/intensities.size();
+        double mean = sum / intensities.size();
 
         double variance = 0;
-        for (int &val: intensities) variance += pow(val-mean,2);
+        for (int& val : intensities) variance += pow(val - mean, 2);
 
         variance /= intensities.size();
 
@@ -87,7 +86,7 @@ public:
         return threshold;
     }
 
-    double getThreshold () {
+    double getThreshold() {
         return threshold;
     }
 
@@ -125,7 +124,7 @@ public:
 
 class SunlightFilter : public Filter
 {
- public:
+public:
     SunlightFilter(Image& img) : Filter(img) {};
     string getName() { return "Sunlight"; };
     static string getId() { return "31"; };
@@ -150,7 +149,7 @@ class SunlightFilter : public Filter
                 double b = 0.7 * image(i, j, 2);
                 if (b < 0)
                 {
-                    b =  0;
+                    b = 0;
                 }
                 image(i, j, 2) = b;
             }
@@ -158,9 +157,9 @@ class SunlightFilter : public Filter
     }
     void getNeeds() override {};
 };
-class NightFilter : public Filter 
+class NightFilter : public Filter
 {
-public :
+public:
     NightFilter(Image& img) : Filter(img) {};
     string getName() { return "Night"; };
     static string getId() { return "n"; };
@@ -173,13 +172,13 @@ public :
                 double r = 1.4 * image(i, j, 0);
                 if (r > 255)
                 {
-                    r = 255; 
+                    r = 255;
                 }
-                image(i, j, 0) = r; 
+                image(i, j, 0) = r;
                 double g = 0.7 * image(i, j, 1);
                 if (g < 0)
                 {
-                    g = 0; 
+                    g = 0;
                 }
                 image(i, j, 1) = g;
                 double b = 1.6 * image(i, j, 2);
@@ -935,7 +934,7 @@ public:
                 image(x, y, 2) = 0;
             }
         }
-         
+
     }
     void getNeeds() override {};
 
@@ -1161,11 +1160,11 @@ public:
 
     void showMenuOptions(bool fileLoaded)
     {
-       
+
         std::cout << RESET << GREEN << "[l] Load Image\n";
         if (fileLoaded)
         {
-            
+
             std::cout << CYAN << "=====================\n";
             std::cout << RESET << BOLD << "    Choose Filters    \n";
             std::cout << RESET << CYAN << "======================\n" << RESET;
@@ -1176,7 +1175,7 @@ public:
                 ++it;
             }
 
-            cout << "\t[s] Save the Image.\n";
+            cout << "\t[s] Save the Image.\n" ;
             cout << "\t[u] Undo \t [r] Redo\n";
         }
         // cout << "0. Exit.\n";
@@ -1216,20 +1215,30 @@ class CurrentImage
 public:
     Image img;
 
-    void currennt_img()
-    {
-        Undo.push(img);
-        Redo = stack<Image>();
-    }
+    void currennt_img(){}
 
     void load()
     {
+        
+
+        
+        if (isLoaded)
+        {
+            char OP; 
+            cout << CYAN <<"Do you want keep your changing ?  Yes(Y) or NO(N) " << RESET << endl;
+            cin >> OP; 
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            if (OP == 'Y')
+            {
+                save(); 
+                cout << GREEN << "Image changed successfully \n" << RESET;
+            }
+        }
         string imgName;
         cout << CYAN << "Please enter image name you want to apply filter on: " << RESET << GREEN << BOLD;
-        cin.ignore();
+        cin >> ws ; 
         getline(cin, imgName);
         cout << "\n\n" << RESET;
-
         img.loadNewImage(getImagePath(imgName));
         setIsLoaded(true);
 
@@ -1257,7 +1266,7 @@ public:
         {
             Undo.push(Undo.top());
             Undo.pop();
-            img =Undo.top();
+            img = Undo.top();
         }
         else
         {
@@ -1342,7 +1351,7 @@ int main()
         {
             currentImage.undo();
         }
-        else if (res == "r" && currentImage.getIsLoaded()) 
+        else if (res == "r" && currentImage.getIsLoaded())
         {
             currentImage.redo();
         }
@@ -1359,8 +1368,9 @@ int main()
         else
         {
             cout << RED << "Invalid option \n" << RESET;
+            cout << YELLOW << "Plz Enter Valid option";
+            cout << "\n\n";
         }
     }
-
     return 0;
 }
