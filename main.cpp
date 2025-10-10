@@ -1,6 +1,6 @@
 /*
     This is an image processing app.
-    When you start the program it asks you to load an image from the assets folder you write the name and the extention of the image (image.jpg).
+    When you start the program it asks you to load an image from the assets folder you write the name and the extension of the image (image.jpg).
     Then a punch of filters appears, you can apply any filter you want, and you can apply filters one by one.
     At any point you can save the image with any extension and in any folder even it does not exist.
 
@@ -9,9 +9,9 @@
     It is scalable, and you can implement any filter smoothly without changing other classes.
 
 
-    20242110 - Hamza Mohammad Zaki - Filters(Merge, GreyScale)
-    20242295 - Mohammad Abdulhakim Ramadan - Filters(White and Black, Flip, Crop)
-    20240588 - Mostafa Ahmed Ali - Filters(Invert, Rotate)
+    20242295 - Mohammad Abdulhakim Ramadan - Filters that have been assigned to Mohammad by our beloved doctor (White and Black, Flip, Crop)
+    20242110 - Hamza Mohammad Zaki - Filters that have been assigned to Hamza by our beloved doctor (GreyScale, Merge, )
+    20240588 - Mostafa Ahmed Ali - Filters that have been assigned to Mostafa by our beloved doctor (Invert, Rotate)
 */
 #include <complex>
 #include <map>
@@ -127,7 +127,7 @@ class SunlightFilter : public Filter
 public:
     SunlightFilter(Image& img) : Filter(img) {};
     string getName() { return "Sunlight"; };
-    static string getId() { return "31"; };
+    static string getId() { return "13"; };
     void apply()
     {
         for (int i = 0; i < image.width; i++)
@@ -162,7 +162,7 @@ class NightFilter : public Filter
 public:
     NightFilter(Image& img) : Filter(img) {};
     string getName() { return "Night"; };
-    static string getId() { return "n"; };
+    static string getId() { return "16"; };
     void apply()
     {
         for (int i = 0; i < image.width; i++)
@@ -1194,6 +1194,47 @@ public:
 
 
 
+class ConvolutionFilter : public Filter {
+    vector<vector<int>> kernel;
+    int divisor;
+
+public:
+    ConvolutionFilter(Image& img, vector<vector<int>> kernel, int divisor = 1) : Filter(img), kernel(kernel), divisor(divisor){};
+    void apply() override {
+        Image output(image.width, image.height);
+
+        for (int x = 1; x < image.width-1; x++) {
+            for (int y = 1; y < image.height-1; y++) {
+                int sumR = 0;
+                int sumG = 0;
+                int sumB = 0;
+
+                for (int i = -1; i <= 1; i++ ) {
+                    for (int j = -1; j <= 1; j++ ) {
+                        sumR += image(x+i,y+j,0) * kernel[i+1][j+1];
+                        sumG += image(x+i,y+j,1) * kernel[i+1][j+1];
+                        sumB += image(x+i,y+j,2) * kernel[i+1][j+1];
+                    }
+                }
+
+
+                output(x,y,0) = clamp(sumR/divisor, 0, 255);
+                output(x,y,1) = clamp(sumG/divisor, 0, 255);
+                output(x,y,2) = clamp(sumB/divisor, 0, 255);
+            }
+        }
+
+        image = output;
+    }
+};
+class SharpenFilter : public ConvolutionFilter {
+
+public:
+    SharpenFilter(Image &img): ConvolutionFilter(img, {{-1,-1,-1},{-1,8,-1},{-1,-1,-1}}){};
+    void getNeeds() override {};
+    string getName() override { return "Sharpen"; }
+    static string getId() { return "40"; }
+};
 
 
 
