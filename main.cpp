@@ -40,10 +40,16 @@ string getImagePath(string imgName) {
     return ("assets/" + imgName);
 }
 
+struct RGB {
+    int R, G, B;
+};
+
+
 class Filter
 {
 protected:
     Image& image;
+    double threshold = 127;
     // static string id;
     // string outputFolderPath = "../../output/";
 public:
@@ -51,6 +57,40 @@ public:
     virtual void apply() = 0;
     virtual void getNeeds() = 0;
     virtual string getName() = 0;
+
+    double computeThreshold() {
+        vector<int> intensities(image.width*image.height);
+
+        for (int x = 0; x < image.width; x++) {
+            for (int y=0; y < image.height; y++) {
+                int r = image(x, y, 0);
+                int g = image(x, y, 1);
+                int b = image(x, y, 2);
+                intensities.push_back(((r+g+b)/3));
+            }
+        }
+
+        double sum = 0;
+        for (int &val: intensities) sum += val;
+
+        double mean = sum/intensities.size();
+
+        double variance = 0;
+        for (int &val: intensities) variance += pow(val-mean,2);
+
+        variance /= intensities.size();
+
+        double standardDeviation = sqrt(variance);
+
+        threshold = mean + 0.6 * standardDeviation;
+
+        return threshold;
+    }
+
+    double getThreshold () {
+        return threshold;
+    }
+
     bool isInBound(int x = 0, int y = 0) {
         bool output = true;
         if (x < 0 || x >= image.width) output = false;
@@ -81,58 +121,6 @@ public:
         img = resizedImage;
     }
     // static string getId() {};
-};
-class MirrorFilter : public Filter
-{
-    char op; 
-public :
-    MirrorFilter(Image& img) : Filter(img) {};
-    string getName() { return "Mirror"; };
-    static string getId() { return "m"; };
-    void getNeeds() override 
-    {
-        cout << "Horizontal Mirror(h) or Vertical Mirror(v) : "; cin >> op; 
-    };
-    void HorizontalMirror(Image&image)
-    {
-        for (int i = 0; i < image.height; i++) 
-        {
-            for (int j = 0; j < image.width / 2; j++) 
-            {
-                swap(image(j, i, 0), image(image.width - j - 1, i, 0)); 
-                swap(image(j,i , 1), image(image.width - j - 1, i, 1)); 
-                swap(image(j, i, 2), image(image.width - j - 1, i, 2)); 
-            }
-        }
-
-    }
-    void VerticalVMirror(Image& image)
-    {
-        for (int i = 0; i < image.height / 2 ; i++)
-        {
-            for (int j = 0; j < image.width; j++)
-            {
-                swap(image(i, j, 0), image(i, image.height - i - 1 , 0));
-                swap(image(i, j, 1), image(i, image.height - i - 1 , 1));
-                swap(image(i, j, 2), image(i, image.height - i - 1,  2));
-            }
-        }
-    }
-    void apply() override
-    {
-        switch (op)
-        {
-        case 'h' :
-            HorizontalMirror(image);
-            break;
-        case 'v':
-            VerticalVMirror(image);
-            break; 
-        default:
-            cout << RED << "Invalid option" << RESET << endl ; 
-        }
-    };
-
 };
 
 class SunlightFilter : public Filter
@@ -207,10 +195,10 @@ public :
     void getNeeds() override {};
 };
 class BlurFilter : public Filter {
-    int Radius;
+    int radius;
 
 public:
-    BlurFilter(Image& img) : Filter(img) {};
+    BlurFilter(Image& img, int r = 10) : Filter(img), radius(r) {};
     string getName() { return "Blur"; };
     static string getId() { return "12"; };
 
@@ -244,10 +232,10 @@ public:
                 {
                     int x1, x2, y1, y2;
 
-                    x1 = max(0, i - Radius);
-                    x2 = min(image.width - 1, i + Radius);
-                    y1 = max(0, j - Radius);
-                    y2 = min(image.height - 1, j + Radius);
+                    x1 = max(0, i - radius);
+                    x2 = min(image.width - 1, i + radius);
+                    y1 = max(0, j - radius);
+                    y2 = min(image.height - 1, j + radius);
 
                     x1++, x2++, y1++, y2++;
 
@@ -258,7 +246,7 @@ public:
                     SUM_B = PrefixB[x2][y2] + PrefixB[x1 - 1][y1 - 1] - PrefixB[x2][y1 - 1] - PrefixB[x1 - 1][y2];
 
 
-                    ll A = (2 * Radius + 1) * (2 * Radius + 1);
+                    ll A = (2 * radius + 1) * (2 * radius + 1);
 
 
                     Blured_image(i, j, 0) = static_cast<unsigned char>(SUM_R / A);
@@ -275,11 +263,9 @@ public:
     }
     void getNeeds() override
     {
-        cout << "Enter strenght of blur : "; cin >> Radius;
+        cout << "Enter strenght of blur : "; cin >> radius;
     }
 };
-
-
 class SkewingFilter : public Filter
 {
     int angle;
@@ -328,7 +314,6 @@ public:
         cout << "Enter skew angle : "; cin >> angle;
     }
 };
-
 class TVFilter : public Filter
 {
 public:
@@ -395,7 +380,6 @@ public:
     }
     void getNeeds() override {};
 };
-
 class WBFilter : public Filter
 {
 public:
@@ -404,6 +388,7 @@ public:
     static string getId() { return "2"; };
     void apply() override
     {
+        computeThreshold();
         for (int i = 0; i < image.width; i++)
         {
             for (int j = 0; j < image.height; j++)
@@ -418,14 +403,13 @@ public:
 
                 for (int k = 0; k < image.channels; k++)
                 {
-                    image(i, j, k) = (avg >= (100) ? 255 : 0);
+                    image(i, j, k) = (avg >= (threshold) ? 255 : 0);
                 }
             }
         }
     };
     void getNeeds() override {};
 };
-
 class MergeFilter : public Filter
 {
     Image overlay;
@@ -539,7 +523,6 @@ public:
         }
     }
 };
-
 class FlipFilter : public Filter
 {
     char dir = 'h';
@@ -606,7 +589,6 @@ public:
     }
 
 };
-
 class InvertFilter : public Filter {
 public:
     InvertFilter(Image& img) : Filter(img) {};
@@ -625,7 +607,6 @@ public:
     void getNeeds() override {};
 
 };
-
 class RotateFilter : public Filter
 {
     int angle;
@@ -693,7 +674,6 @@ public:
         cin >> angle;
     }
 };
-
 class BrightnessFilter : public Filter
 {
     double value;
@@ -722,7 +702,6 @@ public:
         cout << "Value is: " << value << '\n';
     }
 };
-
 class CropFiter : public Filter {
     int corner[2]{ 0 };
     int dimensions[2]{ 100 };
@@ -753,7 +732,6 @@ public:
         image = croppedImage;
     }
 };
-
 class ResizeFilter : public Filter {
     int dimensions[2]{ 100 };
 
@@ -770,7 +748,6 @@ public:
         resizeImage(image, dimensions[0], dimensions[1]);
     }
 };
-
 class OilPaintingFilter : public Filter {
 protected:
     int intensityLevels;
@@ -801,7 +778,6 @@ public:
         }
     }
 };
-
 class PaintingFilter : public OilPaintingFilter {
     int radius;
 
@@ -863,7 +839,6 @@ public:
     }
 
 };
-
 class InfraredFilter : public Filter {
     int radius;
 
@@ -889,7 +864,6 @@ public:
         }
     }
 };
-
 class BloodyFilter : public Filter {
     int radius;
 
@@ -917,7 +891,6 @@ public:
 
 };
 class SkyFilter : public Filter {
-
 public:
     SkyFilter(Image& img) : Filter(img) {};
     void getNeeds() override {};
@@ -941,7 +914,6 @@ public:
     }
 
 };
-
 class GrassFilter : public Filter {
 
 public:
@@ -968,11 +940,6 @@ public:
     void getNeeds() override {};
 
 };
-
-struct RGB {
-    int R, G, B;
-};
-
 class FrameFilter : public Filter {
     int Thickness;
     int R, G, B;
@@ -1170,6 +1137,8 @@ public:
 
 
 
+
+
 // ======================================================================================================
 class Menu
 {
@@ -1347,9 +1316,8 @@ int main()
         {BloodyFilter::getId(), make_shared<BloodyFilter>(currentImage.img)},
         {NightFilter::getId(), make_shared<NightFilter>(currentImage.img)},
         {SunlightFilter::getId(), make_shared<SunlightFilter>(currentImage.img)},
-        {MirrorFilter::getId(), make_shared<MirrorFilter>(currentImage.img)},
         {SkyFilter::getId(),make_shared<SkyFilter>(currentImage.img)},
-        {GrassFilter::getId(),make_shared<GrassFilter>(currentImage.img)}
+        {GrassFilter::getId(),make_shared<GrassFilter>(currentImage.img)},
     };
 
     Menu menu(filters);
