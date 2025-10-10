@@ -9,9 +9,16 @@
     It is scalable, and you can implement any filter smoothly without changing other classes.
 
 
-    20242295 - Mohammad Abdulhakim Ramadan - Filters that have been assigned to Mohammad by our beloved doctor (White and Black, Flip, Crop)
-    20242110 - Hamza Mohammad Zaki - Filters that have been assigned to Hamza by our beloved doctor (GreyScale, Merge, )
-    20240588 - Mostafa Ahmed Ali - Filters that have been assigned to Mostafa by our beloved doctor (Invert, Rotate)
+    20242110 - Hamza Mohammad Zaki - Filters that have been assigned to Hamza by our beloved doctor (GreyScale, Merge, Darken and Lighten, Edge Detection)
+    20242295 - Mohammad Abdulhakim Ramadan - Filters that have been assigned to Mohammad by our beloved doctor (White and Black, Flip, Crop, Resizing, Oil Painting, Infrared, Painting, Bloody, Sky, Grass )
+    20240588 - Mostafa Ahmed Ali - Filters that have been assigned to Mostafa by our beloved doctor (Invert, Rotate, Frame, Blur, Sunlight, Night, Old TV, Skew)
+
+    Repo: https://github.com/mohammadabdulhakim/cpp-image-processor
+    Video:https://drive.google.com/file/d/1JwfZ4EaOa0lDDdudM1ykVUVurc86tPN4/view?usp=drive_link
+    Doc: https://docs.google.com/document/d/1qCHJ92_c90hBn0wo34rJ349e9NXzKGfr/edit?usp=sharing&ouid=104606776738113898703&rtpof=true&sd=true
+
+    Competition Drive: https://drive.google.com/drive/folders/1YQpSNy2T5i5xhCbJqXt8GEbWl3ScDerE
+
 */
 #include <complex>
 #include <map>
