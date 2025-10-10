@@ -788,7 +788,7 @@ public:
         OilPaintingFilter::getNeeds();
     }
     string getName() { return "Painting"; };
-    static string getId() { return "30"; };
+    static string getId() { return "22"; };
 
     void apply() override {
         for (int x = 0; x < image.width; x++) {
@@ -870,7 +870,7 @@ public:
     BloodyFilter(Image& img) : Filter(img) {};
     void getNeeds() override {};
     string getName() { return "Bloody"; };
-    static string getId() { return "31"; };
+    static string getId() { return "19"; };
 
     void apply() override {
         for (int x = 0; x < image.width; x++) {
@@ -894,7 +894,7 @@ public:
     SkyFilter(Image& img) : Filter(img) {};
     void getNeeds() override {};
     string getName() { return "Sky"; };
-    static string getId() { return "32"; };
+    static string getId() { return "21"; };
 
     void apply() override {
         for (int x = 0; x < image.width; x++) {
@@ -918,7 +918,7 @@ class GrassFilter : public Filter {
 public:
     GrassFilter(Image& img) : Filter(img) {};
     string getName() { return "Grass"; };
-    static string getId() { return "33"; };
+    static string getId() { return "20"; };
 
     void apply() override {
         for (int x = 0; x < image.width; x++) {
@@ -1244,10 +1244,10 @@ class Menu
 {
     bool isActive = true;
     string res;
-    unordered_map<string, shared_ptr<Filter>>& filters;
+    vector<pair<string, shared_ptr<Filter>>>& filters;
 
 public:
-    Menu(unordered_map<string, shared_ptr<Filter>>& filters) : filters(filters) {};
+    Menu(vector<pair<string, shared_ptr<Filter>>>& filters) : filters(filters) {};
 
     void welcomeMsg()
     {
@@ -1284,6 +1284,11 @@ public:
         cout << "-------------------------------\n";
     }
 
+    void invalidOptionMsg() {
+        cout << RED << "Invalid option \n" << RESET;
+        cout << YELLOW << "Plz Enter Valid option";
+        cout << "\n\n";
+    }
     bool getIsActive()
     {
         return isActive;
@@ -1320,16 +1325,13 @@ public:
 
     void load()
     {
-        
-
-        
-        if (isLoaded)
+        if (isLoaded && Undo.size() > 1)
         {
             char OP; 
-            cout << CYAN <<"Do you want keep your changing ?  Yes(Y) or NO(N) " << RESET << endl;
+            cout << CYAN <<"Do you want keep your changing ?  (y)es or (n)o: " << RESET << endl;
             cin >> OP; 
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            if (OP == 'Y')
+            if (OP == 'y')
             {
                 save(); 
                 cout << GREEN << "Image changed successfully \n" << RESET;
@@ -1406,7 +1408,7 @@ int main()
 {
     CurrentImage currentImage;
 
-    unordered_map<string, shared_ptr<Filter>> filters = {
+    vector<pair<string, shared_ptr<Filter>>> filters = {
         {GreyFilter::getId(), make_shared<GreyFilter>(currentImage.img)},
         {WBFilter::getId(), make_shared<WBFilter>(currentImage.img)},
         {InvertFilter::getId(), make_shared<InvertFilter>(currentImage.img)},
@@ -1416,19 +1418,19 @@ int main()
         {BrightnessFilter::getId(), make_shared<BrightnessFilter>(currentImage.img)},
         {CropFiter::getId(), make_shared<CropFiter>(currentImage.img)},
         {FrameFilter::getId(), make_shared<FrameFilter>(currentImage.img)},
-        {TVFilter::getId(), make_shared<TVFilter>(currentImage.img)},
-        {SkewingFilter::getId(), make_shared<SkewingFilter>(currentImage.img)},
+        {EdgeDetectionFilter::getId(),make_shared<EdgeDetectionFilter>(currentImage.img)},
         {ResizeFilter::getId(), make_shared<ResizeFilter>(currentImage.img)},
         {BlurFilter::getId(), make_shared<BlurFilter>(currentImage.img)},
-        {OilPaintingFilter::getId(), make_shared<OilPaintingFilter>(currentImage.img)},
-        {PaintingFilter::getId(), make_shared<PaintingFilter>(currentImage.img)},
-        {InfraredFilter::getId(), make_shared<InfraredFilter>(currentImage.img)},
-        {BloodyFilter::getId(), make_shared<BloodyFilter>(currentImage.img)},
-        {NightFilter::getId(), make_shared<NightFilter>(currentImage.img)},
         {SunlightFilter::getId(), make_shared<SunlightFilter>(currentImage.img)},
-        {SkyFilter::getId(),make_shared<SkyFilter>(currentImage.img)},
+        {OilPaintingFilter::getId(), make_shared<OilPaintingFilter>(currentImage.img)},
+        {TVFilter::getId(), make_shared<TVFilter>(currentImage.img)},
+        {NightFilter::getId(), make_shared<NightFilter>(currentImage.img)},
+        {InfraredFilter::getId(), make_shared<InfraredFilter>(currentImage.img)},
+        {SkewingFilter::getId(), make_shared<SkewingFilter>(currentImage.img)},
+        {BloodyFilter::getId(), make_shared<BloodyFilter>(currentImage.img)},
         {GrassFilter::getId(),make_shared<GrassFilter>(currentImage.img)},
-        {EdgeDetectionFilter::getId(),make_shared<EdgeDetectionFilter>(currentImage.img)},
+        {SkyFilter::getId(),make_shared<SkyFilter>(currentImage.img)},
+        {PaintingFilter::getId(), make_shared<PaintingFilter>(currentImage.img)},
     };
 
     Menu menu(filters);
@@ -1461,17 +1463,23 @@ int main()
         {
             menu.setIsActive(false);
         }
-        else if (currentImage.getIsLoaded() && filters.count(res))
+        else if (currentImage.getIsLoaded())
         {
-            filters[res]->getNeeds();
-            filters[res]->apply();
-            currentImage.currennt_img();
+            bool noFilterWithRes = true;
+            for(auto &filter: filters) {
+                if (filter.first == res) {
+                    filter.second->getNeeds();
+                    filter.second->apply();
+                    currentImage.currennt_img();
+                    noFilterWithRes = false;
+                }
+            }
+
+            if (noFilterWithRes) menu.invalidOptionMsg();
         }
         else
         {
-            cout << RED << "Invalid option \n" << RESET;
-            cout << YELLOW << "Plz Enter Valid option";
-            cout << "\n\n";
+            menu.invalidOptionMsg();
         }
     }
     return 0;
