@@ -768,6 +768,7 @@ public:
     static string getId() { return "14"; };
 
     void apply() override {
+        Image output(image.width, image.height);
         for (int x = 0; x < image.width; x++) {
             for (int y = 0; y < image.height; y++) {
 
@@ -778,10 +779,11 @@ public:
 
                     int newIntensity = (binIndex * 255) / (intensityLevels - 1);
 
-                    image(x, y, k) = newIntensity;
+                    output(x, y, k) = newIntensity;
                 }
             }
         }
+        image = output;
     }
 };
 class PaintingFilter : public OilPaintingFilter {
@@ -798,6 +800,8 @@ public:
     static string getId() { return "22"; };
 
     void apply() override {
+        Image output(image.width, image.height);
+
         for (int x = 0; x < image.width; x++) {
             for (int y = 0; y < image.height; y++) {
                 vector<int> intensityCount(intensityLevels, 0);
@@ -836,12 +840,13 @@ public:
                 }
 
                 if (maxCount) { // I mean maxCount > 0; but logically if maxCount was not zero then it is a true value;
-                    image(x, y, 0) = avgR[maxBin] / maxCount;
-                    image(x, y, 1) = avgG[maxBin] / maxCount;
-                    image(x, y, 2) = avgB[maxBin] / maxCount;
+                    output(x, y, 0) = avgR[maxBin] / maxCount;
+                    output(x, y, 1) = avgG[maxBin] / maxCount;
+                    output(x, y, 2) = avgB[maxBin] / maxCount;
                 }
             }
         }
+        image = output;
     }
 
 };
@@ -1160,32 +1165,25 @@ public:
             }}
         };
     }
-
     void getNeeds() override {};
-
     void apply() override {
         GreyFilter grey(image);
         grey.apply();
-
         BlurFilter blur(image, 2);
         blur.apply();
 
         Image output(image.width, image.height);
-
         map<string,vector<vector<int>>> kernels = sobelKernels();
         computeThreshold();
         for (int x = 1; x < image.width-1; x++) {
             for (int y = 1; y < image.height-1; y++) {
                 int sumX = 0;
                 int sumY = 0;
-
                 for (int i = -1; i <= 1; i++ ) {
                     for (int j = -1; j <= 1; j++ ) {
                         int intensity = image(x+i,y+j,0);
-
                         sumX += intensity * kernels["Gx"][i+1][j+1];
                         sumY += intensity * kernels["Gy"][i+1][j+1];
-
                     }
                 }
                 int magnitude = sqrt((sumX*sumX)+(sumY*sumY));
@@ -1328,11 +1326,13 @@ class CurrentImage
 public:
     Image img;
 
-    void currennt_img(){}
+    void filterApplied() {
+        Undo.push(img);
+    }
 
     void load()
     {
-        if (isLoaded && Undo.size() > 1)
+        if (isLoaded && !Undo.empty())
         {
             char OP; 
             cout << CYAN <<"Do you want keep your changing ?  (y)es or (n)o: " << RESET << endl;
@@ -1354,7 +1354,6 @@ public:
 
         Undo = stack<Image>();
         Redo = stack<Image>();
-        Undo.push(img);
     }
 
     void save()
@@ -1372,11 +1371,11 @@ public:
 
     void undo()
     {
-        if (Undo.size() > 1)
+        if (!Undo.empty())
         {
-            Undo.push(Undo.top());
-            Undo.pop();
+            Redo.push(img);
             img = Undo.top();
+            Undo.pop();
         }
         else
         {
@@ -1388,7 +1387,7 @@ public:
     {
         if (!Redo.empty())
         {
-            Undo.push(Redo.top());
+            Undo.push(img);
             img = Redo.top();
             Redo.pop();
         }
@@ -1475,9 +1474,9 @@ int main()
             bool noFilterWithRes = true;
             for(auto &filter: filters) {
                 if (filter.first == res) {
+                    currentImage.filterApplied();
                     filter.second->getNeeds();
                     filter.second->apply();
-                    currentImage.currennt_img();
                     noFilterWithRes = false;
                 }
             }
