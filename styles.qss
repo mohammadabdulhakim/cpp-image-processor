@@ -1,0 +1,97 @@
+/* === الخلفية العامة للتطبيق === */
+QWidget {
+    background-color: #121212;   /* لون غامق أنيق */
+    color: #e0e0e0;             /* نص فاتح لسهولة القراءة */
+    font-family: "Segoe UI", "Arial";
+    font-size: 14px;
+}
+
+/* === الأزرار العامة === */
+QPushButton {
+    background-color: #1f1f1f;
+    border: 1px solid #2e2e2e;
+    border-radius: 6px;
+    color: #f0f0f0;
+    padding: 6px 12px;
+    font-weight: 500;
+}
+
+QPushButton:hover {
+    background-color: #2a2a2a;
+    border: 1px solid #3a3a3a;
+}
+
+QPushButton:pressed {
+    background-color: #3a3a3a;
+    border: 1px solid #505050;
+}
+
+/* === الأزرار المفعّلة أو المختارة === */
+QPushButton:checked {
+    background-color: #0078d7;
+    color: white;
+    border: 1px solid #005ea6;
+}
+
+/* === أشرطة التمرير (Scrollbars) === */
+QScrollBar:vertical {
+    background: #1e1e1e;
+    width: 10px;
+    margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+    background: #333;
+    border-radius: 5px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #555;
+}
+
+/* === القوائم === */
+QMenuBar, QMenu {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+    border: none;
+}
+
+QMenu::item:selected {
+    background-color: #2a2a2a;
+}
+
+/* === مربعات النصوص === */
+QLineEdit, QTextEdit, QPlainTextEdit {
+    background-color: #1c1c1c;
+    border: 1px solid #333;
+    border-radius: 4px;
+    color: #f5f5f5;
+    padding: 4px;
+}
+
+/* === القوائم المنسدلة === */
+QComboBox {
+    background-color: #1c1c1c;
+    color: #f0f0f0;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 4px 8px;
+}
+
+QComboBox:hover {
+    border: 1px solid #555;
+}
+
+/* === شريط الحالة === */
+QStatusBar {
+    background-color: #181818;
+    color: #aaaaaa;
+}
+
+/* === الجداول === */
+QTableView {
+    background-color: #1a1a1a;
+    alternate-background-color: #202020;
+    gridline-color: #333;
+    color: #f0f0f0;
+}

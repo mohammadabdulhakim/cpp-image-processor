@@ -1,18 +1,38 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.19)
+project(untitled LANGUAGES CXX)
 
-project(ImageProcessing CXX)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
 
-file(GLOB_RECURSE SRC_FILES src/*.cpp)
+qt_standard_project_setup()
 
-# Build the main executable
-add_executable(${PROJECT_NAME} ${SRC_FILES} "include/filters/saturation.h" "include/filters/STRUCT.h" "include/filters/OldPhoto.h" "include/filters/gama.h"  "include/filters/HeatMap.h")
+qt_add_executable(untitled
+    WIN32 MACOSX_BUNDLE
+    main.cpp
+    mainwindow.cpp
+    mainwindow.h
+    mainwindow.ui
+    styles.qss
+    resources.qrc
 
-# Post-build step: copy assets/ to the same folder as the executable (Debug or Release)
-add_custom_command(
-    TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_SOURCE_DIR}/assets
-            $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets
 )
+
+target_link_libraries(untitled
+    PRIVATE
+        Qt::Core
+        Qt::Widgets
+)
+
+include(GNUInstallDirs)
+
+install(TARGETS untitled
+    BUNDLE  DESTINATION .
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+qt_generate_deploy_app_script(
+    TARGET untitled
+    OUTPUT_SCRIPT deploy_script
+    NO_UNSUPPORTED_PLATFORM_ERROR
+)
+install(SCRIPT ${deploy_script})
