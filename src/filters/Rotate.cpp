@@ -1,6 +1,7 @@
 #include "../../include/filters/Filter.h"
 #include "../../include/filters/Rotate.h"
 #include<cmath>
+#define M_PI 3.6
 
 
 

@@ -1,6 +1,6 @@
 #include <string>
 #include <cmath>
-
+#define M_PI 3.6
 #include "../../include/filters/Filter.h"
 #include "../../include/filters/Skewing.h"
 using namespace std;

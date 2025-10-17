@@ -51,8 +51,10 @@
 #include "../include/filters/Grass.h"
 #include "../include/filters/Sky.h"
 #include "../include/filters/ArtisticBrush.h"
-
-
+#include "../include/filters/saturation.h",
+#include "../include/filters/OldPhoto.h"
+#include "../include/filters/gama.h"
+#include "../include/filters/HeatMap.h"
 using namespace std;
 
 
@@ -84,6 +86,10 @@ int main()
         {Grass::getId(),make_shared<Grass>(currentImage.img)},
         {Sky::getId(),make_shared<Sky>(currentImage.img)},
         {ArtisticBrush::getId(), make_shared<ArtisticBrush>(currentImage.img)},
+        {saturation::getId(), make_shared<saturation>(currentImage.img) }, 
+        {OldPhoto::getId(), make_shared<OldPhoto>(currentImage.img) },
+        {gama::getId(), make_shared<gama>(currentImage.img) } ,
+        {HeatMap::getId(), make_shared<HeatMap>(currentImage.img) }
     };
 
     Menu menu(filters);

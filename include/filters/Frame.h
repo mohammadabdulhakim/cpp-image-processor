@@ -1,13 +1,9 @@
 #pragma once
 #include "Filter.h"
+#include"../../include/filters/STRUCT.h",
 
 #ifndef FRAME_H
 #define FRAME_H
-
-struct RGB
-{
-    int R, G, B;
-};
 
 class Frame : public Filter
 {

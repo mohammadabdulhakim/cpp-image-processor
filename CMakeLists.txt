@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 file(GLOB_RECURSE SRC_FILES src/*.cpp)
 
 # Build the main executable
-add_executable(${PROJECT_NAME} ${SRC_FILES})
+add_executable(${PROJECT_NAME} ${SRC_FILES} "include/filters/saturation.h" "include/filters/STRUCT.h" "include/filters/OldPhoto.h" "include/filters/gama.h"  "include/filters/HeatMap.h")
 
 # Post-build step: copy assets/ to the same folder as the executable (Debug or Release)
 add_custom_command(

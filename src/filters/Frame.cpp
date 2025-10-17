@@ -1,6 +1,7 @@
 #include "../../include/filters/Filter.h"
 #include "../../include/filters/Frame.h"
 #include "../../include/utils/Colors.h"
+#include"../../include/filters/STRUCT.h",
 #include <unordered_map>
 
 
@@ -46,9 +47,9 @@
             if (colors.find(colorName) != colors.end())
             {
                 RGB c = colors[colorName];
-                R = c.R;
-                G = c.G;
-                B = c.B;
+                R = c.r;
+                G = c.g;
+                B = c.b;
             }
             else
             {
@@ -66,9 +67,9 @@
 
             if (colors.find(colorName) != colors.end()) {
                 RGB c = colors[colorName];
-                R = c.R;
-                G = c.G;
-                B = c.B;
+                R = c.r;
+                G = c.g;
+                B = c.b;
             }
             else {
                 cout << RED << "Unknown color name.\n" << RESET;
@@ -156,35 +157,35 @@
             for (int i = outerThickness; i < width - outerThickness; i++)
             {
                 for (int t = 0; t < innerThickness; t++) {
-                    image(i, outerThickness + t, 0) = inner.R;
-                    image(i, outerThickness + t, 1) = inner.G;
-                    image(i, outerThickness + t, 2) = inner.B;
+                    image(i, outerThickness + t, 0) = inner.r;
+                    image(i, outerThickness + t, 1) = inner.g;
+                    image(i, outerThickness + t, 2) = inner.b;
                 }
             }
             for (int i = outerThickness; i < width - outerThickness; i++)
             {
                 for (int t = 0; t < innerThickness; t++) {
-                    image(i, height - outerThickness - 1 - t, 0) = inner.R;
-                    image(i, height - outerThickness - 1 - t, 1) = inner.G;
-                    image(i, height - outerThickness - 1 - t, 2) = inner.B;
+                    image(i, height - outerThickness - 1 - t, 0) = inner.r;
+                    image(i, height - outerThickness - 1 - t, 1) = inner.g;
+                    image(i, height - outerThickness - 1 - t, 2) = inner.b;
                 }
             }
             for (int i = outerThickness; i < height - outerThickness; i++)
             {
                 for (int t = 0; t < innerThickness; t++)
                 {
-                    image(outerThickness + t, i, 0) = inner.R;
-                    image(outerThickness + t, i, 1) = inner.G;
-                    image(outerThickness + t, i, 2) = inner.B;
+                    image(outerThickness + t, i, 0) = inner.r;
+                    image(outerThickness + t, i, 1) = inner.g;
+                    image(outerThickness + t, i, 2) = inner.b;
                 }
             }
             for (int i = outerThickness; i < height - outerThickness; i++)
             {
                 for (int t = 0; t < innerThickness; t++)
                 {
-                    image(width - outerThickness - 1 - t, i, 0) = inner.R;
-                    image(width - outerThickness - 1 - t, i, 1) = inner.G;
-                    image(width - outerThickness - 1 - t, i, 2) = inner.B;
+                    image(width - outerThickness - 1 - t, i, 0) = inner.r;
+                    image(width - outerThickness - 1 - t, i, 1) = inner.g;
+                    image(width - outerThickness - 1 - t, i, 2) = inner.b;
                 }
             }
         }
